@@ -35,6 +35,7 @@
 		<Unit filename="include/definitions.h" />
 		<Unit filename="include/drawer.h" />
 		<Unit filename="include/frameControl.h" />
+		<Unit filename="include/init.h" />
 		<Unit filename="include/movement.h" />
 		<Unit filename="src/control.c">
 			<Option compilerVar="CC" />
@@ -43,6 +44,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/frameControl.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/init.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/main.c">
