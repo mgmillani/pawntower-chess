@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 	{
 		for(j=0 ; j<8 ; j++,k++)
 		{
-			printf("%02d(%02d) ",(int)board[k],k);
+			printf("%d(%02d) ",(int)board[k],k);
 		}
 		printf("\n");
 	}
