@@ -111,3 +111,74 @@ void movimentosPossiveis(const unsigned char *tabuleiro,unsigned int pos, unsign
 	}
 }
 
+/**
+  * move a peca que esta em posOrigem no tabuleiro para posDestino
+  * atualiza os dados relevantes da estrutura jogo
+  * assume que o movimento eh valido
+  */
+void movePeca(t_jogo *jogo, unsigned char time,unsigned char pecaOrigem, unsigned int posOrigem, unsigned int posDestino)
+{
+	unsigned char *tabuleiro = jogo->tabuleiro;
+	t_jogador *jogadorA; //jogador que moveu a peca
+	t_jogador *jogadorB; //outro jogador (pode ter perdido uma peca)
+	if(time == P1)
+	{
+		jogadorA = jogo->p1;
+		jogadorB = jogo->p2;
+	}
+	else
+	{
+		jogadorA = jogo->p2;
+		jogadorB = jogo->p1;
+	}
+
+	//tira a peca de sua posicao
+	tabuleiro[posOrigem] = VAZIO;
+
+	unsigned char *array;
+	unsigned char len;
+	//determina qual array deve ter a posicao da peca atualizada
+	if(pecaOrigem==PEAO)
+	{
+		array = jogadorA->peaoPos;
+		len = jogadorA->numPeoes;
+	}
+	else
+	{
+		array = jogadorA->torrePos;
+		len = jogadorA->numTorres;
+	}
+
+	//busca a posicao da peca no array e atualiza-a
+	//sabemos que ela esta no array
+	unsigned int i;
+	for(i=0 ; array[i]!=posOrigem ; i++)
+		;
+	array[i] = posDestino;
+
+	//verifica se uma peca foi capturada
+	if(tabuleiro[posDestino] != VAZIO)
+	{
+		if((tabuleiro[posDestino] & MASCARAPECA) == PEAO)
+		{
+			array = jogadorB->peaoPos;
+			jogadorB->numPeoes--;
+			len = jogadorB->numPeoes; //valor da ultima posicao valida do array antes da remocao
+		}
+		else
+		{
+			array = jogadorB->torrePos;
+			jogadorB->numTorres--;
+			len = jogadorB->numTorres;	//valor da ultima posicao valida do array antes da remocao
+		}
+
+		//remove a peca do array
+		for(i=0 ; array[i]!=posDestino ; i++)
+			;
+		array[i] = array[len];
+	}
+
+	//coloca a peca em sua devida posica
+	tabuleiro[posDestino] = pecaOrigem;
+}
+
