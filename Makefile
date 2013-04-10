@@ -8,10 +8,12 @@ LIBS = -lGL -lSDLmain -lSDL
 OBJECTS = $(OBJ)/main.o $(OBJ)/drawer.o $(OBJ)/frameControl.o $(OBJ)/movement.o
 NAME = pawntower-chess
 
-all: obj release
+all: $(OBJ) $(BIN) release
 
-obj:
-	mkdir obj
+$(OBJ):
+	mkdir $(OBJ)
+$(BIN):
+	mkdir $(BIN)
 
 release: CFLAGS += -s -O3
 release: main
