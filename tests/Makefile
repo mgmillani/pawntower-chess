@@ -8,7 +8,9 @@ LIBS = -lGL -lSDLmain -lSDL
 #OBJECTS = $(OBJ)/main.o $(OBJ)/drawer.o $(OBJ)/frameControl.o $(OBJ)/movement.o
 #NAME = pawntower-chess
 
-all: pieceMovement
+all: $(OBJ) pieceMovement
+$(OBJ):
+	mkdir $(OBJ)
 
 pieceMovement: $(OBJ)/movement.o $(OBJ)/init.o
 	$(CC) $(CFLAGS) pieceMovement.c $(OBJ)/movement.o $(OBJ)/init.o $(LIBS) -o $(BIN)/pieceMovement.test

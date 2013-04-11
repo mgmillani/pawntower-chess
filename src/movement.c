@@ -123,13 +123,13 @@ void movePeca(t_jogo *jogo, unsigned char time,unsigned char pecaOrigem, unsigne
 	t_jogador *jogadorB; //outro jogador (pode ter perdido uma peca)
 	if(time == P1)
 	{
-		jogadorA = jogo->p1;
-		jogadorB = jogo->p2;
+		jogadorA = &(jogo->p1);
+		jogadorB = &(jogo->p2);
 	}
 	else
 	{
-		jogadorA = jogo->p2;
-		jogadorB = jogo->p1;
+		jogadorA = &(jogo->p2);
+		jogadorB = &(jogo->p1);
 	}
 
 	//tira a peca de sua posicao

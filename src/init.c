@@ -25,3 +25,28 @@ void iniciaTabuleiro(unsigned char *tabuleiro)
 	tabuleiro[8*7] = P1TORRE;
 	tabuleiro[7+8*7] = P1TORRE;
 }
+
+/**
+  * coloca o jogo em seu estado inicial
+  * se a estrutura passada for NULL, aloca uma nova
+  * retorna o ponteiro para o jogo
+  */
+t_jogo *iniciaEstadoJogo(t_jogo *jogo)
+{
+	//aloca se necessario
+	if(jogo==NULL)
+		jogo=malloc(sizeof(*jogo));
+
+	iniciaTabuleiro(jogo->tabuleiro);
+	jogo->p1.numTorres=2;
+	jogo->p2.numTorres=2;
+	jogo->p1.numPeoes=8;
+	jogo->p2.numPeoes=8;
+
+
+
+}
+
+
+
+

@@ -1,15 +1,6 @@
 #ifndef MOVEMENT_H
 #define MOVEMENT_H
 
-typedef struct s_jogo
-{
-
-	unsigned char tabuleiro[64];
-	t_jogador p1;
-	t_jogador p2;
-
-}t_jogo;
-
 typedef struct s_jogador
 {
 	unsigned char numTorres;
@@ -19,6 +10,17 @@ typedef struct s_jogador
 	unsigned char torrePos[2];
 
 }t_jogador;
+
+typedef struct s_jogo
+{
+
+	unsigned char tabuleiro[64];
+	t_jogador p1;
+	t_jogador p2;
+
+}t_jogo;
+
+
 
 /**
   * dada uma posicao no tabuleiro, calcula em quais posicoes a peca pode se mover
@@ -33,7 +35,7 @@ void movimentosPossiveis(const unsigned char *tabuleiro,unsigned int pos, unsign
   * atualiza os dados relevantes da estrutura jogo
   * assume que o movimento eh valido
   */
-void movePeca(t_jogo *jogo, unsigned int posOrigem, unsigned int posDestino);
+void movePeca(t_jogo *jogo, unsigned char time,unsigned char pecaOrigem, unsigned int posOrigem, unsigned int posDestino);
 
 #endif // MOVEMENT_H
 
