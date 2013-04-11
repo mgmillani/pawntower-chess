@@ -132,13 +132,10 @@ void movePeca(t_jogo *jogo, unsigned char time,unsigned char pecaOrigem, unsigne
 		jogadorB = &(jogo->p1);
 	}
 
-	//tira a peca de sua posicao
-	tabuleiro[posOrigem] = VAZIO;
-
 	unsigned char *array;
 	unsigned char len;
 	//determina qual array deve ter a posicao da peca atualizada
-	if(pecaOrigem==PEAO)
+	if((pecaOrigem & MASCARAPECA)==PEAO)
 	{
 		array = jogadorA->peaoPos;
 		len = jogadorA->numPeoes;
@@ -178,6 +175,8 @@ void movePeca(t_jogo *jogo, unsigned char time,unsigned char pecaOrigem, unsigne
 		array[i] = array[len];
 	}
 
+	//tira a peca de sua posicao
+	tabuleiro[posOrigem] = VAZIO;
 	//coloca a peca em sua devida posica
 	tabuleiro[posDestino] = pecaOrigem;
 }

@@ -5,10 +5,18 @@
 
 #include "definitions.h"
 
-void movePiece(unsigned char *board, unsigned int src,unsigned int dst)
+void movePiece(t_jogo *jogo, unsigned int src,unsigned int dst)
 {
 
+	unsigned char time = jogo->tabuleiro[src] & MASCARATIME;
+	unsigned char pecaOrigem = jogo->tabuleiro[src];
 
+	printf("SRC: %d\n",src);
+	printf("POrigem: %d\n",(int)pecaOrigem);
+	printf("Time: %d\n",(int)time);
+
+	movePeca(jogo,time,pecaOrigem,src,dst);
+	//void movePeca(t_jogo *jogo, unsigned char time,unsigned char pecaOrigem, unsigned int posOrigem, unsigned int posDestino);
 
 }
 
@@ -37,8 +45,11 @@ void moves(unsigned char *board, unsigned int pos)
 int main(int argc, char *argv[])
 {
 
-	unsigned char board[8*8];
-	iniciaTabuleiro(board);
+	unsigned char *board;
+	t_jogo jogo;
+	iniciaEstadoJogo(&jogo);
+	//iniciaTabuleiro(board);
+	board = jogo.tabuleiro;
 
 	if(argc != 2 && argc!=3)
 	{
@@ -58,6 +69,13 @@ int main(int argc, char *argv[])
 		printf("\n");
 	}
 
+	//mostra o estado da estrutura t_jogo
+	printf("\n#Jogador 1:\n");
+	printf("Peoes:");
+	for(i=0;i<jogo.p1.numPeoes;i++)
+		printf(" %u",jogo.p1.peaoPos[i]);
+	printf("\n");
+
 	//mostrar os movimentos
 	if(argc==2)
 	{
@@ -72,9 +90,22 @@ int main(int argc, char *argv[])
 		unsigned int dst;
 		sscanf(argv[2],"%u",&dst);
 
-		movePiece(board,src,dst);
+		movePiece(&jogo,src,dst);
+
+		printf("\nAfter movement:\n");
+		k=0;
+		for(i=0 ; i<8 ; i++)
+		{
+			for(j=0 ; j<8 ; j++,k++)
+			{
+				printf("%d(%02d) ",(int)board[k],k);
+			}
+			printf("\n");
+		}
 
 	}
+
+
 
 	return 0;
 }

@@ -1,5 +1,7 @@
-#include "init.h"
+#include <stdlib.h>
 
+#include "init.h"
+#include "movement.h"
 #include "definitions.h"
 
 /**
@@ -43,7 +45,21 @@ t_jogo *iniciaEstadoJogo(t_jogo *jogo)
 	jogo->p1.numPeoes=8;
 	jogo->p2.numPeoes=8;
 
+	//torres estao nos cantos
+	jogo->p1.torrePos[0] = 8*7;
+	jogo->p1.torrePos[1] = 8*7+7;
+	jogo->p2.torrePos[0] = 0;
+	jogo->p2.torrePos[1] = 7;
 
+	//peoes estao na segunda e setima linhas
+	unsigned int i;
+	for(i=0 ; i<8 ; i++)
+	{
+		jogo->p1.peaoPos[i] = 8*6+i;
+		jogo->p2.peaoPos[i] = 8*1+i;
+	}
+
+	return jogo;
 
 }
 

@@ -1,6 +1,8 @@
 #ifndef INIT_H
 #define INIT_H
 
+#include "movement.h"
+
 /**
   * coloca as pecas em suas posicoes originais
   */
