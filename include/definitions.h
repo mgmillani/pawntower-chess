@@ -17,8 +17,8 @@
 
 typedef struct s_rect
 {
-	unsigned int x,y;
-	unsigned int w,h;
+	double x,y;
+	double w,h;
 }t_rect;
 
 

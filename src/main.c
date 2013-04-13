@@ -5,6 +5,7 @@
 #include <SDL/SDL_opengl.h>
 
 #include "frameControl.h"
+#include "movement.h"
 #include "drawer.h"
 
 #include "definitions.h"
@@ -39,7 +40,8 @@ int init(SDL_Surface **screen,int width,int height,int bpp,int options)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	glOrtho(0.0f,width,height,0.0f,0.0f,1.0f);
+	//glOrtho(0.0f,width,height,0.0f,0.0f,1.0f);
+	glOrtho(0,1,0,1,0,1);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
@@ -59,18 +61,16 @@ int main(int argc, char *argv[])
 	init(&screen,WIDTH,HEIGHT,BPP,SDL_OPENGL | SDL_SWSURFACE);
 	//camera
 	t_rect camera;
-	camera.x = (WIDTH-HEIGHT)/2;
+	camera.x = (WIDTH - HEIGHT)/(2.0*WIDTH);
 	camera.y = 0;
-	camera.w = HEIGHT;
-	camera.h = HEIGHT;
+	camera.w = HEIGHT/(double)WIDTH;
+	camera.h = 1;
 	//frame controller
 	t_frameController ctrl;
 	initFrameController(&ctrl,FPS);
-	//cores
-	GLfloat evenColor[3] = {1.0,0.0,0.0};
-	GLfloat oddColor[3] = {0.0,0.0,1.0};
 
-	char board[8][8] = {};
+	t_jogo jogo;
+	iniciaEstadoJogo(&jogo);
 	char quit = 0;
 
 	while(!quit)
@@ -82,8 +82,7 @@ int main(int argc, char *argv[])
 				quit = 1;
 		}
 
-		//desenha a board
-		drawBoard(&camera,board,evenColor,oddColor);
+		desenhaJogo(&camera,&jogo);
 		SDL_GL_SwapBuffers();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		controlFramerate(ctrl);

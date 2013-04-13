@@ -2,58 +2,54 @@
 #include <SDL/SDL_opengl.h>
 
 #include "drawer.h"
+#include "movement.h"
 
 #include "definitions.h"
 
 /**
-  * desenha o tabuleiro na regiao informada
+  * desenha as pecas e o tabuleiro na regiao dada da tela
   */
-void drawBoard(t_rect *region, char board[8][8], GLfloat evenColor[3], GLfloat oddColor[3])
+void desenhaJogo(t_rect *regiao, t_jogo *jogo)
 {
-	//calcula o tamanho de cada celula
-	unsigned int cellW = region->w/8;
-	unsigned int cellH = region->h/8;
-	unsigned int x = region->x;
-	unsigned int y = region->y;
-	//desenha os retangulos pares
+	desenhaTabuleiro(regiao);
+	desenhaPecas(regiao,&(jogo->p1),P1);
+	desenhaPecas(regiao,&(jogo->p2),P2);
+}
+
+/**
+  * desenha o tabuleiro na regiao dada
+  */
+void desenhaTabuleiro(t_rect *regiao)
+{
+	return;
+}
+
+/**
+  * desenha as pecas do jogador na regiao dada
+  */
+void desenhaPecas(t_rect *regiao,t_jogador *jogador, char time)
+{
 	unsigned int i;
-	glColor3fv(evenColor);
-	//para cada linha
-	for(i=0 ; i<8 ; i++,y+=cellH)
-	{
-		//para cada coluna
-		unsigned int j;
-		x = region->x + (i&1)*cellW;
-		for(j=i&1 ; j<8 ; j+=2,x+=cellW*2)
-		{
-			glBegin(GL_QUADS);
-			glVertex2i(x,y);	//top-left
-			glVertex2i(x+cellW,y);	//top-right
-			glVertex2i(x+cellW,y+cellH);	//bottom-right
-			glVertex2i(x,y+cellH);	//bottom-left
-			glEnd();
-		}
-	}
+	//desenha os peoes
+	for(i=0 ; i<jogador->numPeoes ; i++)
+		desenhaPeao(regiao,jogador->peaoPos[i]/8,jogador->peaoPos[i]%8,time);
+	//desenha as torres
+	for(i=0 ; i<jogador->numTorres ; i++)
+		desenhaPeao(regiao,jogador->torrePos[i]/8,jogador->torrePos[i]%8,time);
+}
 
-	//desenha as celulas impares
-	glColor3fv(oddColor);
-	y = region->y;
-	//para cada linha
-	for(i=0 ; i<8 ; i++,y+=cellH)
-	{
-		//para cada coluna
-		unsigned int j;
-		x = region->x + ((i+1)&1)*cellW;
-		for(j=(i+1)&1 ; j<8 ; j+=2,x+=cellW*2)
-		{
-			glBegin(GL_QUADS);
-			glVertex2i(x,y);	//top-left
-			glVertex2i(x+cellW,y);	//top-right
-			glVertex2i(x+cellW,y+cellH);	//bottom-right
-			glVertex2i(x,y+cellH);	//bottom-left
-			glEnd();
-		}
-	}
+/**
+  * desenha um peao na linha e coluna dadas do tabuleiro (que esta na regiao passada)
+  */
+void desenhaPeao(t_rect *regiao,int linha, int coluna,char time)
+{
+	return;
+}
 
-
+/**
+  * desenha um peao na linha e coluna dadas do tabuleiro (que esta na regiao passada)
+  */
+void desenhaTorre(t_rect *regiao,int linha, int coluna,char time)
+{
+	return;
 }
