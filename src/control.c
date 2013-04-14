@@ -5,7 +5,12 @@
 /**
 	* thread principal do jogo, a qual deve-se mandar os comandos de cada jogador
 	*/
-int mestreDeJogo(void *data);
+int mestreDeJogo(t_controle *controle)
+{
+
+
+
+}
 
 /**
 	* informa a thread do jogo de que um movimento deve ser feito

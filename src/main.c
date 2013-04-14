@@ -71,8 +71,11 @@ int main(int argc, char *argv[])
 
 	t_jogo jogo;
 	iniciaEstadoJogo(&jogo);
-	char quit = 0;
 
+	t_
+	SDL_Thread *mestre = SDL_CreateThread((int (*)(void*))mestreDeJogo,);
+
+	char quit = 0;
 	while(!quit)
 	{
 		//verifica se o usuario fez algo
