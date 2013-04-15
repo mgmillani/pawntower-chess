@@ -6,6 +6,7 @@
 
 #include "frameControl.h"
 #include "movement.h"
+#include "control.h"
 #include "drawer.h"
 
 #include "definitions.h"
@@ -72,8 +73,8 @@ int main(int argc, char *argv[])
 	t_jogo jogo;
 	iniciaEstadoJogo(&jogo);
 
-	t_
-	SDL_Thread *mestre = SDL_CreateThread((int (*)(void*))mestreDeJogo,);
+	t_controle controle;
+	SDL_Thread *mestre = SDL_CreateThread((int (*)(void*))mestreDeJogo,&controle);
 
 	char quit = 0;
 	while(!quit)
