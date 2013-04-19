@@ -22,11 +22,27 @@ typedef struct s_controle
 	SDL_cond *inicioJogo;
 }t_controle;
 
+typedef struct s_controleHumano
+{
+
+
+
+}t_controleHumano;
+
+/**
+  * inicia o controle do jogo
+  */
+void iniciaControle(t_controle *controle,t_jogo *jogo);
 
 /**
 	* thread principal do jogo, a qual deve-se mandar os comandos de cada jogador
 	*/
 int mestreDeJogo(t_controle *controle);
+
+/**
+  * thread para um jogador humano
+  */
+int jogadorHumano(t_controleHumano *controle);
 
 /**
   * verifica se o jogo acabou

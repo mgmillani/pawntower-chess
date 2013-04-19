@@ -8,7 +8,6 @@
   */
 void iniciaTabuleiro(unsigned char *tabuleiro);
 
-
 /**
   * coloca o jogo em seu estado inicial
   * se a estrutura passada for NULL, aloca uma nova

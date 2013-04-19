@@ -4,6 +4,22 @@
 #include "control.h"
 
 /**
+  * inicia o controle do jogo
+  */
+void iniciaControle(t_controle *controle,t_jogo *jogo)
+{
+	controle->jogo = jogo;
+	controle->jogada = malloc(sizeof(*(controle->jogada)));
+	//cria os mutexes
+	controle->proximo = SDL_CreateMutex();
+	controle->turnoP1 = SDL_CreateMutex();
+	controle->turnoP2 = SDL_CreateMutex();
+	//cria os conds
+	controle->fimTurno = SDL_CreateCond();
+	controle->inicioJogo = SDL_CreateCond();
+}
+
+/**
 	* thread principal do jogo, a qual deve-se mandar os comandos de cada jogador
 	*/
 int mestreDeJogo(t_controle *controle)
@@ -14,6 +30,7 @@ int mestreDeJogo(t_controle *controle)
 	//tranca ambos os jogadores ate o jogo comecar
 	SDL_LockMutex(controle->turnoP1);
 	SDL_LockMutex(controle->turnoP2);
+	SDL_CondSignal(controle->inicioJogo);
 	//espera ate o sinal de inicio da partida para liberar o P1
 	SDL_CondWait(controle->inicioJogo,controle->turnoP1);
 	while(estadoJogo==0)
@@ -45,9 +62,16 @@ int mestreDeJogo(t_controle *controle)
 		SDL_CondWait(controle->fimTurno,trocaJogador);
 	}
 
+	SDL_DestroyMutex(trocaJogador);
+
 	return estadoJogo;
 
 }
+
+/**
+  * thread para um jogador humano
+  */
+int jogadorHumano(t_controleHumano *controle);
 
 /**
   * verifica se o jogo acabou

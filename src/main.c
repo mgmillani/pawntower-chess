@@ -74,7 +74,14 @@ int main(int argc, char *argv[])
 	iniciaEstadoJogo(&jogo);
 
 	t_controle controle;
+	iniciaControle(&controle,&jogo);
+	SDL_mutex *jogoPronto = SDL_CreateMutex();
+	SDL_LockMutex(jogoPronto);
 	SDL_Thread *mestre = SDL_CreateThread((int (*)(void*))mestreDeJogo,&controle);
+	//espera ate o mestre ter terminado a inicializacao
+	SDL_CondWait(controle.inicioJogo,jogoPronto);
+	//cria os jogadores
+
 
 	char quit = 0;
 	while(!quit)
@@ -85,12 +92,13 @@ int main(int argc, char *argv[])
 			if(event.type == SDL_QUIT)
 				quit = 1;
 		}
-
 		desenhaJogo(&camera,&jogo);
 		SDL_GL_SwapBuffers();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		controlFramerate(ctrl);
 	}
+
+	SDL_Quit();
 
 	return 0;
 }
