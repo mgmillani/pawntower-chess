@@ -71,7 +71,68 @@ int mestreDeJogo(t_controle *controle)
 /**
   * thread para um jogador humano
   */
-int jogadorHumano(t_controleHumano *controle);
+int jogadorHumano(t_controleHumano *controle)
+{
+
+	//se o jogo acabou, sai da funcao
+	while(controle->estadoJogo != 0)
+	{
+		int celulaAtiva = -1; //qual celula do tabuleira esta ativa. -1 indica nenhuma
+		unsigned char peca;
+		char fimTurno = 0;
+		//inicia o turno
+		SDL_LockMutex(controle->turno);
+		while(!fimTurno)
+		{
+			//espera o usuario fazer algo
+			SDL_LockMutex(controle->entrada);
+			SDL_CondWait(controle->houveEntrada,controle->entrada);
+			unsigned int pos = controle->celulaX + 8*controle->celulaY;
+			//se alguma celula estiver ativa
+			if(celulaAtiva>=0)
+			{
+				//se for uma celula para a qual podemos mover, move a peca para la
+				unsigned int i;
+				char move = 0;
+				for(i=0 ; i<*(controle->numMov) &&!move ; i++)
+					if(controle->movimentos[i]==pos)
+						move = 1;
+				for(i=0 ; i<*(controle->numCapt) &&!move ; i++)
+					if(controle->capturas[i]==pos)
+						move = 1;
+				if(move)
+				{
+					controle->jogada->time = controle->time;
+					controle->jogada->posOrigem = celulaAtiva;
+					controle->jogada->posDestino = pos;
+					controle->jogada->pecaOrigem = peca;
+					//termina o turno
+					fimTurno = 1;
+					SDL_UnlockMutex(controle->turno);
+					SDL_LockMutex(controle->proximo);
+					SDL_CondSignal(controle->fimTurno);
+					SDL_CondWait(controle->fimTurno,controle->proximo);
+				}
+			}
+			//se nenhuma celula estiver ativa
+			else
+			{
+				//se existe uma peca do jogador na posicao selecionada
+				if((controle->jogo->tabuleiro[pos] & MASCARATIME) == controle->time)
+				{
+					//marca a peca como selecionada
+					celulaAtiva = pos;
+					peca = controle->jogo->tabuleiro[pos] & MASCARAPECA;
+					//realca todas as celulas para as quais a peca pode se mover
+					movimentosPossiveis(controle->jogo->tabuleiro,pos,controle->movimentos,controle->numMov,controle->capturas,controle->numCapt);
+				}
+			}
+		}
+	}
+
+	return controle->estadoJogo;
+
+}
 
 /**
   * verifica se o jogo acabou

@@ -24,9 +24,23 @@ typedef struct s_controle
 
 typedef struct s_controleHumano
 {
+	t_jogo *jogo;
+	t_jogada *jogada;
+	int celulaX;  //qual celula foi ativada
+	int celulaY;
+	char time; //time do jogador
+	//variaveis para realce
+	unsigned int *movimentos;
+	unsigned int *capturas;
+	unsigned int *numMov;
+	unsigned int *numCapt;
 
-
-
+	SDL_mutex *proximo;
+	SDL_mutex *turno;
+	SDL_mutex *entrada;
+	SDL_cond *houveEntrada;
+	SDL_cond *fimTurno;
+	int estadoJogo;	//o estado do jogo (ver funcao fimDeJogo)
 }t_controleHumano;
 
 /**
@@ -47,7 +61,8 @@ int jogadorHumano(t_controleHumano *controle);
 /**
   * verifica se o jogo acabou
   * retorna 0 caso nao tenha terminado
-  * nao-zero caso contrario
+  * retorna o time do jogador que ganhou ou
+  * P1 | P2 caso tenha ocorrido empate
   */
 int fimDeJogo(t_jogo *jogo);
 
