@@ -2,6 +2,7 @@
 #define CONTROL_H
 
 #include "movement.h"
+#include "drawer.h"
 
 typedef struct s_jogada
 {
@@ -20,28 +21,30 @@ typedef struct s_controle
 	SDL_mutex *turnoP2;
 	SDL_cond *fimTurno;
 	SDL_cond *inicioJogo;
+	int *estadoJogo;
 }t_controle;
 
 typedef struct s_controleHumano
 {
 	t_jogo *jogo;
 	t_jogada *jogada;
-	int celulaX;  //qual celula foi ativada
-	int celulaY;
+	int *celulaX;  //qual celula foi ativada
+	int *celulaY;
 	char time; //time do jogador
 	//variaveis para realce
-	unsigned int *movimentos;
-	unsigned int *capturas;
-	unsigned int *numMov;
-	unsigned int *numCapt;
+	t_realce *realce;
 
 	SDL_mutex *proximo;
 	SDL_mutex *turno;
-	SDL_mutex *entrada;
 	SDL_cond *houveEntrada;
 	SDL_cond *fimTurno;
-	int estadoJogo;	//o estado do jogo (ver funcao fimDeJogo)
+	int *estadoJogo;	//o estado do jogo (ver funcao fimDeJogo)
 }t_controleHumano;
+
+/**
+  * inicia o controle de um jogador humano
+  */
+void iniciaControleHumano(t_controleHumano *controleHumano,t_controle *controleMestre,char time,t_realce *realce, int *celulaX, int *celulaY, SDL_cond *houveEntrada);
 
 /**
   * inicia o controle do jogo

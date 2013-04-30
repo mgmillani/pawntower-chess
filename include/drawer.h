@@ -4,6 +4,14 @@
 #include "definitions.h"
 #include "movement.h"
 
+typedef struct s_realce
+{
+	unsigned int movimentos[14];
+	unsigned int capturas[14];
+	unsigned int numMov;
+	unsigned int numCapt;
+}t_realce;
+
 /**
   * desenha as pecas e o tabuleiro na regiao dada da tela
   */

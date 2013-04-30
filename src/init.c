@@ -5,6 +5,15 @@
 #include "definitions.h"
 
 /**
+  * inicia a estrutura para realce de celulas
+  */
+void iniciaRealce(t_realce *realce)
+{
+	realce->numMov = 0;
+	realce->numCapt = 0;
+}
+
+/**
   * coloca as pecas em suas posicoes originais
   */
 void iniciaTabuleiro(unsigned char *tabuleiro)

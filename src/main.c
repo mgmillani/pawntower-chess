@@ -10,6 +10,7 @@
 #include "drawer.h"
 
 #include "definitions.h"
+#include "debug.h"
 
 #define WIDTH 800
 #define HEIGHT 600
@@ -66,6 +67,8 @@ int main(int argc, char *argv[])
 	camera.y = 0;
 	camera.w = HEIGHT/(double)WIDTH;
 	camera.h = 1;
+	double cellW = camera.w/8;
+	double cellH = camera.h/8;
 	//frame controller
 	t_frameController ctrl;
 	initFrameController(&ctrl,FPS);
@@ -80,8 +83,19 @@ int main(int argc, char *argv[])
 	SDL_Thread *mestre = SDL_CreateThread((int (*)(void*))mestreDeJogo,&controle);
 	//espera ate o mestre ter terminado a inicializacao
 	SDL_CondWait(controle.inicioJogo,jogoPronto);
-	//cria os jogadores
-
+	ERR("Mestre criado.\n");
+	//cria os jogadores humanos
+	int celulaX;
+	int celulaY;
+	t_realce realce;
+	iniciaRealce(&realce);
+	SDL_cond *houveEntrada = SDL_CreateCond();
+	t_controleHumano controleP1;
+	iniciaControleHumano(&controleP1,&controle,P1,&realce,&celulaX,&celulaY,houveEntrada);
+	t_controleHumano controleP2;
+	iniciaControleHumano(&controleP2,&controle,P2,&realce,&celulaX,&celulaY,houveEntrada);
+	SDL_Thread *p1 = SDL_CreateThread((int (*)(void *))jogadorHumano,&controleP1 );
+	SDL_Thread *p2 = SDL_CreateThread((int (*)(void *))jogadorHumano,&controleP2 );
 
 	char quit = 0;
 	while(!quit)
@@ -91,6 +105,25 @@ int main(int argc, char *argv[])
 		{
 			if(event.type == SDL_QUIT)
 				quit = 1;
+			else if(event.type == SDL_MOUSEBUTTONDOWN)
+			{
+				//calcula em qual celula ocorreu o clique
+				double x = event.motion.x/(double)WIDTH - camera.x;
+				double y = event.motion.y/(double)HEIGHT - camera.y;
+
+				celulaX = x/cellW;
+				celulaY = y/cellH;
+				//avisa as threads que o usuario fez algo
+				ERR("Entrada:\n");
+				ERR("X:%lf\tY:%lf\n",celulaX,celulaY);
+				ERR("sX:%lf\tsY:%lf\n",x,y);
+				SDL_CondSignal(houveEntrada);
+			}
+			else if(event.type == SDL_KEYDOWN)
+			{
+				if(event.key.keysym.sym == SDLK_ESCAPE)
+					quit = 1;
+			}
 		}
 		desenhaJogo(&camera,&jogo);
 		SDL_GL_SwapBuffers();

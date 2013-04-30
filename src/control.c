@@ -2,6 +2,36 @@
 
 #include "definitions.h"
 #include "control.h"
+#include "drawer.h"
+
+#include "debug.h"
+
+/**
+  * inicia o controle de um jogador humano
+  */
+void iniciaControleHumano(t_controleHumano *controleHumano,t_controle *controleMestre,char time,t_realce *realce, int *celulaX, int *celulaY, SDL_cond *houveEntrada)
+{
+
+	controleHumano->jogo = controleMestre->jogo;
+	controleHumano->jogada = controleMestre->jogada;
+	controleHumano->proximo = controleMestre->proximo;
+	controleHumano->time = time;
+	if(time == P1)
+		controleHumano->turno = controleMestre->turnoP1;
+	else
+		controleHumano->turno = controleMestre->turnoP2;
+
+	controleHumano->celulaX = celulaX;
+	controleHumano->celulaY = celulaY;
+
+	controleHumano->houveEntrada = houveEntrada;
+
+	controleHumano->estadoJogo = controleMestre->estadoJogo;
+	controleHumano->fimTurno = controleMestre->fimTurno;
+
+	controleHumano->realce = realce;
+
+}
 
 /**
   * inicia o controle do jogo
@@ -73,32 +103,38 @@ int mestreDeJogo(t_controle *controle)
   */
 int jogadorHumano(t_controleHumano *controle)
 {
-
+	ERR("Jogador criado\n");
+	SDL_mutex *entrada = SDL_CreateMutex();
+	t_realce *realce = controle->realce;
 	//se o jogo acabou, sai da funcao
-	while(controle->estadoJogo != 0)
+	while(*(controle->estadoJogo) != 0)
 	{
-		int celulaAtiva = -1; //qual celula do tabuleira esta ativa. -1 indica nenhuma
+		int celulaAtiva = -1; //qual celula do tabuleiro esta ativa. -1 indica nenhuma
 		unsigned char peca;
 		char fimTurno = 0;
 		//inicia o turno
+		ERR("Lock turno\n");
 		SDL_LockMutex(controle->turno);
 		while(!fimTurno)
 		{
 			//espera o usuario fazer algo
-			SDL_LockMutex(controle->entrada);
-			SDL_CondWait(controle->houveEntrada,controle->entrada);
-			unsigned int pos = controle->celulaX + 8*controle->celulaY;
+			SDL_LockMutex(entrada);
+			SDL_CondWait(controle->houveEntrada,entrada);
+			unsigned int pos = *controle->celulaX + 8*(*controle->celulaY);
+			ERR("POS: %u\n",pos);
+			ERR("X: %u\n",*controle->celulaX);
+			ERR("Y: %u\n",*controle->celulaY);
 			//se alguma celula estiver ativa
 			if(celulaAtiva>=0)
 			{
 				//se for uma celula para a qual podemos mover, move a peca para la
 				unsigned int i;
 				char move = 0;
-				for(i=0 ; i<*(controle->numMov) &&!move ; i++)
-					if(controle->movimentos[i]==pos)
+				for(i=0 ; i<realce->numMov &&!move ; i++)
+					if(realce->movimentos[i]==pos)
 						move = 1;
-				for(i=0 ; i<*(controle->numCapt) &&!move ; i++)
-					if(controle->capturas[i]==pos)
+				for(i=0 ; i<realce->numCapt &&!move ; i++)
+					if(realce->capturas[i]==pos)
 						move = 1;
 				if(move)
 				{
@@ -124,13 +160,14 @@ int jogadorHumano(t_controleHumano *controle)
 					celulaAtiva = pos;
 					peca = controle->jogo->tabuleiro[pos] & MASCARAPECA;
 					//realca todas as celulas para as quais a peca pode se mover
-					movimentosPossiveis(controle->jogo->tabuleiro,pos,controle->movimentos,controle->numMov,controle->capturas,controle->numCapt);
+					movimentosPossiveis(controle->jogo->tabuleiro,pos,realce->movimentos,&realce->numMov,realce->capturas,&realce->numCapt);
 				}
 			}
 		}
 	}
 
-	return controle->estadoJogo;
+	SDL_DestroyMutex(entrada);
+	return *(controle->estadoJogo);
 
 }
 
