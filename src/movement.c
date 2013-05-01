@@ -29,6 +29,7 @@ void linhaScan(const unsigned char *tabuleiro,
 		{
 			capturas[*numCapt] = posAtual;
 			(*numCapt)++;
+			return;
 		}
 		//se for uma peca do proprio jogador, entao a torre nao pode se mover mais
 		else
@@ -78,14 +79,14 @@ void movimentosPossiveis(const unsigned char *tabuleiro,unsigned int pos, unsign
 		unsigned int col = pos%8;
 		//caso nao seja a mais da esquerda, verifica a diagonal esquerda
 		if(col!=0)
-			if((tabuleiro[diagEsq] & MASCARATIME) == time)
+			if((tabuleiro[diagEsq] & MASCARATIME) != time && tabuleiro[diagEsq]!=VAZIO)
 			{
 				capturas[0] = diagEsq;
 				(*numCapt)++;
 			}
 		//se nao for a mais da direita, verifica a diagonal direita
 		if(col<7)
-			if((tabuleiro[diagDir] & MASCARATIME) == time)
+			if((tabuleiro[diagDir] & MASCARATIME) != time && tabuleiro[diagDir]!=VAZIO)
 			{
 				capturas[*numCapt] = diagDir;
 				(*numCapt)++;
@@ -100,14 +101,14 @@ void movimentosPossiveis(const unsigned char *tabuleiro,unsigned int pos, unsign
 		unsigned int col = pos%8;
 		unsigned int posAtual = pos;
 		//determina para quais posicoes a direita da peca ela pode se mover
-		linhaScan(tabuleiro,col,8,1,1,posAtual+1,movimentos,numMov,capturas,numCapt,time);
+		linhaScan(tabuleiro,col+1,7,1,1,posAtual+1,movimentos,numMov,capturas,numCapt,time);
 		//determina para quais posicoes a esquerda da peca ela pode se mover
 		linhaScan(tabuleiro,0,col-1,-1,1,posAtual-1,movimentos,numMov,capturas,numCapt,time);
 		//determina para quais posicoes acima da peca ela pode se mover
 		unsigned int row = pos/8;
 		linhaScan(tabuleiro,0,row-1,-8,1,posAtual-8,movimentos,numMov,capturas,numCapt,time);
 		//determina para quais posicoes abaixo da peca ela pode se mover
-		linhaScan(tabuleiro,row+1,8,8,1,posAtual+8,movimentos,numMov,capturas,numCapt,time);
+		linhaScan(tabuleiro,row+1,7,8,1,posAtual+8,movimentos,numMov,capturas,numCapt,time);
 	}
 }
 

@@ -1,6 +1,8 @@
 #ifndef CONTROL_H
 #define CONTROL_H
 
+#include <SDL/SDL_thread.h>
+
 #include "movement.h"
 #include "drawer.h"
 
@@ -20,8 +22,9 @@ typedef struct s_controle
 	SDL_mutex *turnoP1;
 	SDL_mutex *turnoP2;
 	SDL_cond *fimTurno;
+	SDL_cond *fimTurno2;
 	SDL_cond *inicioJogo;
-	int *estadoJogo;
+	int estadoJogo;
 }t_controle;
 
 typedef struct s_controleHumano
@@ -38,6 +41,7 @@ typedef struct s_controleHumano
 	SDL_mutex *turno;
 	SDL_cond *houveEntrada;
 	SDL_cond *fimTurno;
+	SDL_cond *fimTurno2;
 	int *estadoJogo;	//o estado do jogo (ver funcao fimDeJogo)
 }t_controleHumano;
 
@@ -73,6 +77,8 @@ int fimDeJogo(t_jogo *jogo);
 	* executa a jogada. Deve ser chamada pela thread do mestreDeJogo
 	* time corresponde ao time do jogador que fez o movimento
 	*/
-void executaJogada(t_jogada *jogada);
+void executaJogada(t_jogo *jogo,t_jogada *jogada);
+
+void printTabuleiro(unsigned char *tabuleiro);
 
 #endif // CONTROL_H

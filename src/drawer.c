@@ -6,6 +6,8 @@
 
 #include "definitions.h"
 
+#include "debug.h"
+
 /**
   * desenha as pecas e o tabuleiro na regiao dada da tela
   */
@@ -21,6 +23,14 @@ void desenhaJogo(t_rect *regiao, t_jogo *jogo)
   */
 void desenhaTabuleiro(t_rect *regiao)
 {
+
+	glColor3f(1,0,0);
+	glBegin(GL_QUADS);
+	glVertex2d(regiao->x,regiao->y);
+	glVertex2d(regiao->x,regiao->y+regiao->h);
+	glVertex2d(regiao->x+regiao->w,regiao->y+regiao->h);
+	glVertex2d(regiao->x+regiao->w,regiao->y);
+	glEnd();
 	return;
 }
 
@@ -35,7 +45,7 @@ void desenhaPecas(t_rect *regiao,t_jogador *jogador, char time)
 		desenhaPeao(regiao,jogador->peaoPos[i]/8,jogador->peaoPos[i]%8,time);
 	//desenha as torres
 	for(i=0 ; i<jogador->numTorres ; i++)
-		desenhaPeao(regiao,jogador->torrePos[i]/8,jogador->torrePos[i]%8,time);
+		desenhaTorre(regiao,jogador->torrePos[i]/8,jogador->torrePos[i]%8,time);
 }
 
 /**
@@ -43,6 +53,28 @@ void desenhaPecas(t_rect *regiao,t_jogador *jogador, char time)
   */
 void desenhaPeao(t_rect *regiao,int linha, int coluna,char time)
 {
+	if(time==P1)
+		glColor3f(0,0,1);
+	else
+		glColor3f(0,1,0);
+
+	double cellW = regiao->w/8;
+	double cellH = regiao->h/8;
+
+	double minx = coluna*cellW + regiao->x;
+	double maxx = (coluna+1)*cellW + regiao->x;
+	double miny = linha*cellH + regiao->y;
+	double maxy = (linha+1)*cellH + regiao->y;
+
+	glBegin(GL_QUADS);
+
+	glVertex2d(minx,miny);
+	glVertex2d(maxx,miny);
+	glVertex2d(maxx,maxy);
+	glVertex2d(minx,maxy);
+
+	glEnd();
+
 	return;
 }
 
@@ -51,5 +83,27 @@ void desenhaPeao(t_rect *regiao,int linha, int coluna,char time)
   */
 void desenhaTorre(t_rect *regiao,int linha, int coluna,char time)
 {
+	if(time==P1)
+		glColor3f(1,0,1);
+	else
+		glColor3f(1,1,0);
+
+	double cellW = regiao->w/8;
+	double cellH = regiao->h/8;
+
+	double minx = coluna*cellW + regiao->x;
+	double maxx = (coluna+1)*cellW + regiao->x;
+	double miny = linha*cellH + regiao->y;
+	double maxy = (linha+1)*cellH + regiao->y;
+
+	glBegin(GL_QUADS);
+
+	glVertex2d(minx,miny);
+	glVertex2d(maxx,miny);
+	glVertex2d(maxx,maxy);
+	glVertex2d(minx,maxy);
+
+	glEnd();
+
 	return;
 }

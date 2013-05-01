@@ -2,12 +2,14 @@
 #include <stdlib.h>
 
 #include <SDL/SDL.h>
+#include <SDL/SDL_thread.h>
 #include <SDL/SDL_opengl.h>
 
 #include "frameControl.h"
 #include "movement.h"
 #include "control.h"
 #include "drawer.h"
+#include "init.h"
 
 #include "definitions.h"
 #include "debug.h"
@@ -43,7 +45,7 @@ int init(SDL_Surface **screen,int width,int height,int bpp,int options)
 	glLoadIdentity();
 
 	//glOrtho(0.0f,width,height,0.0f,0.0f,1.0f);
-	glOrtho(0,1,0,1,0,1);
+	glOrtho(0,1,1,0,0,1);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
@@ -94,6 +96,10 @@ int main(int argc, char *argv[])
 	iniciaControleHumano(&controleP1,&controle,P1,&realce,&celulaX,&celulaY,houveEntrada);
 	t_controleHumano controleP2;
 	iniciaControleHumano(&controleP2,&controle,P2,&realce,&celulaX,&celulaY,houveEntrada);
+
+	ERR("Go!\n");
+	SDL_CondBroadcast(controle.inicioJogo);
+
 	SDL_Thread *p1 = SDL_CreateThread((int (*)(void *))jogadorHumano,&controleP1 );
 	SDL_Thread *p2 = SDL_CreateThread((int (*)(void *))jogadorHumano,&controleP2 );
 
@@ -114,10 +120,11 @@ int main(int argc, char *argv[])
 				celulaX = x/cellW;
 				celulaY = y/cellH;
 				//avisa as threads que o usuario fez algo
-				ERR("Entrada:\n");
-				ERR("X:%lf\tY:%lf\n",celulaX,celulaY);
-				ERR("sX:%lf\tsY:%lf\n",x,y);
-				SDL_CondSignal(houveEntrada);
+				/*ERR("Entrada:\n");
+				ERR("X:%d\tY:%d\n",celulaX,celulaY);
+				ERR("sX:%lf\tsY:%lf\n",x,y);*/
+				SDL_CondBroadcast(houveEntrada);
+				//printTabuleiro(jogo.tabuleiro);
 			}
 			else if(event.type == SDL_KEYDOWN)
 			{
