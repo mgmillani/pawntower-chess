@@ -97,11 +97,15 @@ int main(int argc, char *argv[])
 	t_controleHumano controleP2;
 	iniciaControleHumano(&controleP2,&controle,P2,&realce,&celulaX,&celulaY,houveEntrada);
 
+	t_controleIA ia2;
+	iniciaControleIA(&ia2,&controle,P2);
+
 	ERR("Go!\n");
 	SDL_CondBroadcast(controle.inicioJogo);
 
 	SDL_Thread *p1 = SDL_CreateThread((int (*)(void *))jogadorHumano,&controleP1 );
-	SDL_Thread *p2 = SDL_CreateThread((int (*)(void *))jogadorHumano,&controleP2 );
+	SDL_Thread *p2 = SDL_CreateThread((int (*)(void *))jogadorIaRandom,&ia2 );
+	//SDL_Thread *p2 = SDL_CreateThread((int (*)(void *))jogadorHumano,&controleP2 );
 
 	char quit = 0;
 	while(!quit)

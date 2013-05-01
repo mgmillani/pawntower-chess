@@ -27,6 +27,22 @@ typedef struct s_controle
 	int estadoJogo;
 }t_controle;
 
+typedef struct s_controleIA
+{
+
+	t_jogo *jogo;
+	t_jogada *jogada;
+
+	char time; //time do jogador
+
+	SDL_mutex *proximo;
+	SDL_mutex *turno;
+	SDL_cond *fimTurno;
+	SDL_cond *fimTurno2;
+	int *estadoJogo;	//o estado do jogo (ver funcao fimDeJogo)
+
+}t_controleIA;
+
 typedef struct s_controleHumano
 {
 	t_jogo *jogo;
@@ -45,6 +61,8 @@ typedef struct s_controleHumano
 	int *estadoJogo;	//o estado do jogo (ver funcao fimDeJogo)
 }t_controleHumano;
 
+void iniciaControleIA(t_controleIA *controleIA, t_controle *controleMestre, char time);
+
 /**
   * inicia o controle de um jogador humano
   */
@@ -59,6 +77,11 @@ void iniciaControle(t_controle *controle,t_jogo *jogo);
 	* thread principal do jogo, a qual deve-se mandar os comandos de cada jogador
 	*/
 int mestreDeJogo(t_controle *controle);
+
+/**
+  * thread para uma ia randomica
+  */
+int jogadorIaRandom(t_controleIA *controle);
 
 /**
   * thread para um jogador humano

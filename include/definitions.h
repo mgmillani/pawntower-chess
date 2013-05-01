@@ -15,6 +15,9 @@
 #define P2TORRE     3 //011
 #define VAZIO       4 //100
 
+#define UNFINISHED -1
+#define DRAW -2
+
 typedef struct s_rect
 {
 	double x,y;
