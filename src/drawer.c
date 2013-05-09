@@ -23,15 +23,35 @@ void desenhaJogo(t_rect *regiao, t_jogo *jogo)
   */
 void desenhaTabuleiro(t_rect *regiao)
 {
-
-	glColor3f(1,0,0);
-	glBegin(GL_QUADS);
-	glVertex2d(regiao->x,regiao->y);
-	glVertex2d(regiao->x,regiao->y+regiao->h);
-	glVertex2d(regiao->x+regiao->w,regiao->y+regiao->h);
-	glVertex2d(regiao->x+regiao->w,regiao->y);
-	glEnd();
-	return;
+   int coluna,linha;
+   double minx,miny,maxx,maxy;
+   double cellW = regiao->w/8;
+   double cellH = regiao->h/8;
+   glColor3f(1.0,1.0,1.0);
+   glBegin(GL_QUADS);
+   glVertex2d(regiao->x,regiao->y);
+   glVertex2d(regiao->x,regiao->y+regiao->h);
+   glVertex2d(regiao->x+regiao->w,regiao->y+regiao->h);
+   glVertex2d(regiao->x+regiao->w,regiao->y);
+   glEnd();
+   glColor3f(0.0,0.0,0.0);
+   for(coluna=0;coluna<8;coluna=coluna+2)
+   {
+      for(linha=0;linha<8;linha++)
+      {	   
+	 minx = coluna*cellW + cellW*(linha%2) + regiao->x ;
+	 maxx = (coluna+1)*cellW+ cellW*(linha%2) + regiao->x;
+	 miny = linha*cellH + regiao->y;
+	 maxy = (linha+1)*cellH  + regiao->y;
+	 glBegin(GL_QUADS);
+	    glVertex2d(minx,miny);
+	    glVertex2d(minx,maxy);
+	    glVertex2d(maxx,maxy);
+	    glVertex2d(maxx,miny);
+	 glEnd();
+      }
+   }
+   return;
 }
 
 /**
@@ -53,19 +73,77 @@ void desenhaPecas(t_rect *regiao,t_jogador *jogador, char time)
   */
 void desenhaPeao(t_rect *regiao,int linha, int coluna,char time)
 {
-	if(time==P1)
-		glColor3f(0,0,1);
-	else
-		glColor3f(0,1,0);
-
-	double cellW = regiao->w/8;
-	double cellH = regiao->h/8;
-
-	double minx = coluna*cellW + regiao->x;
-	double maxx = (coluna+1)*cellW + regiao->x;
-	double miny = linha*cellH + regiao->y;
-	double maxy = (linha+1)*cellH + regiao->y;
-
+  float cor=0.2;
+  if(time==P1)
+    glColor3f(0.0,0.0,1.0);
+  else
+    glColor3f(0.0,1.0,0.0);
+   
+  double cellW = regiao->w/8;
+  double cellH = regiao->h/8;
+   
+  double minx = coluna*cellW  + regiao->x;
+  //double maxx = coluna*cellW  + regiao->x;
+  double miny = linha*cellH + regiao->y;
+  //double maxy = linha*cellH + regiao->y;
+  glColor3f (cor, cor, cor);
+  glTranslatef(minx,miny,0.0);
+   //base peao
+  glBegin (GL_POLYGON);
+    glVertex2f (0.1*cellW,0.9*cellH);
+    glVertex2f (0.1*cellW,0.8*cellH);
+    glVertex2f (0.3*cellW,0.75*cellH); 
+    glVertex2f (0.7*cellW,0.75*cellH);
+    glVertex2f (0.9*cellW,0.8*cellH);
+    glVertex2f (0.9*cellW,0.9*cellH);
+  glEnd();
+  
+  //corpo peao   
+   glBegin (GL_POLYGON);
+     glVertex2f (0.7*cellW  ,0.75*cellH);
+     glVertex2f (0.525*cellW,0.25*cellH);
+     glVertex2f (0.475*cellW,0.25*cellH);
+     glVertex2f (0.3*cellW  ,0.75*cellH);
+   glEnd();
+  //esfera topo peao *cellH
+  glBegin (GL_POLYGON);
+    glVertex2f (0.525*cellW,0.25*cellH);
+    glVertex2f (0.6*cellW,0.2*cellH);
+    glVertex2f (0.6*cellW,0.15*cellH);
+    glVertex2f (0.55*cellW,0.1*cellH);
+    glVertex2f (0.45*cellW,0.1*cellH);
+    glVertex2f (0.4*cellW,0.15*cellH);
+    glVertex2f (0.4*cellW,0.2*cellH);
+    glVertex2f (0.475*cellW,0.25*cellH);
+  glEnd();
+  //linhas *cell
+  glLineWidth(3);
+  glBegin (GL_LINE_LOOP);
+  glColor3f (1-cor, 1-cor, 1-cor);
+  glVertex2f (0.9*cellW,0.9*cellH);      
+  glVertex2f (0.9*cellW,0.8*cellH);
+  glVertex2f (0.7*cellW,0.75*cellH);
+  //linha esfera topo peao
+  glVertex2f (0.525*cellW ,0.25*cellH);
+  glVertex2f (0.6*cellW   ,0.2*cellH);
+  
+  glVertex2f (0.6*cellW   ,0.15*cellH);
+  glVertex2f (0.55*cellW  ,0.1*cellH);
+  
+  glVertex2f (0.45*cellW  ,0.1*cellH);
+  glVertex2f (0.4*cellW   ,0.15*cellH);
+  
+  glVertex2f (0.4*cellW   ,0.2*cellH);
+  glVertex2f (0.475*cellW ,0.25*cellH);
+  //fim esfera topo
+  
+ 
+  glVertex2f (0.3*cellW ,0.75*cellH);
+  glVertex2f (0.1*cellW,0.8*cellH);
+  glVertex2f (0.1*cellW,0.9*cellH);
+  glEnd();
+  glTranslatef(-minx,-miny,0.0); 
+/*
 	glBegin(GL_QUADS);
 
 	glVertex2d(minx,miny);
@@ -74,7 +152,7 @@ void desenhaPeao(t_rect *regiao,int linha, int coluna,char time)
 	glVertex2d(minx,maxy);
 
 	glEnd();
-
+*/
 	return;
 }
 
@@ -83,19 +161,90 @@ void desenhaPeao(t_rect *regiao,int linha, int coluna,char time)
   */
 void desenhaTorre(t_rect *regiao,int linha, int coluna,char time)
 {
-	if(time==P1)
-		glColor3f(1,0,1);
-	else
-		glColor3f(1,1,0);
-
-	double cellW = regiao->w/8;
-	double cellH = regiao->h/8;
-
-	double minx = coluna*cellW + regiao->x;
-	double maxx = (coluna+1)*cellW + regiao->x;
-	double miny = linha*cellH + regiao->y;
-	double maxy = (linha+1)*cellH + regiao->y;
-
+   float cor=0.5;
+   if(time==P1)
+     glColor3f(1.0,0.0,1.0);
+   else
+     glColor3f(1.0,1.0,0.0);
+   
+   double cellW = regiao->w/8;
+   double cellH = regiao->h/8;
+   
+   double minx = coluna*cellW  + regiao->x;
+   //double maxx = (coluna+1)*cellW  + regiao->x;
+   double miny = linha*cellH + regiao->y;
+   // double maxy = (linha+1)*cellH + regiao->y;
+   glTranslatef(minx,miny,0.0);
+   glColor3f (cor, cor, cor);
+   //base torre 
+   glBegin (GL_POLYGON);
+      glVertex2f (0.9*cellW,0.9*cellH);
+      glVertex2f (0.9*cellW,0.75*cellH);
+      glVertex2f (0.1*cellW,0.75*cellH);
+      glVertex2f (0.1*cellW,0.9*cellH);
+   glEnd();
+   //corpo torre   
+   glBegin (GL_POLYGON);
+      glVertex2f (0.7*cellW,0.8*cellH);
+      glVertex2f (0.7*cellW,0.3*cellH);
+      glVertex2f (0.3*cellW,0.3*cellH);
+      glVertex2f (0.3*cellW,0.8*cellH);
+   glEnd();
+   //topo torre
+   glBegin (GL_QUADS);
+      glVertex2f (0.8*cellW,0.3*cellH);
+      glVertex2f (0.2*cellW,0.3*cellH);
+      glVertex2f (0.2*cellW,0.2*cellH);
+      glVertex2f (0.8*cellW,0.2*cellH);
+   glEnd();
+   glBegin (GL_QUADS);
+      glVertex2f (0.8*cellW,0.2*cellH);
+      glVertex2f (0.65*cellW,0.2*cellH);
+      glVertex2f (0.65*cellW,0.1*cellH);
+      glVertex2f (0.8*cellW,0.1*cellH);
+   glEnd();
+   glBegin (GL_QUADS);
+      glVertex2f (0.575*cellW,0.2*cellH);
+      glVertex2f (0.425*cellW,0.2*cellH);
+      glVertex2f (0.425*cellW,0.1*cellH);
+      glVertex2f (0.575*cellW,0.1*cellH);
+   glEnd();
+   glBegin (GL_QUADS);
+      glVertex2f (0.35*cellW,0.2*cellH);
+      glVertex2f (0.2*cellW,0.2*cellH);
+      glVertex2f (0.2*cellW,0.1*cellH);
+      glVertex2f (0.35*cellW,0.1*cellH);
+   glEnd();
+   glColor3f(1.0, 0.0, 1.0);
+   //contorno
+   glLineWidth(3);
+   glBegin (GL_LINE_LOOP);
+   //glColor3f (1-cor, 1-cor, 1-cor);
+      glVertex2f (0.9*cellW,0.9*cellH);      
+      glVertex2f (0.9*cellW,0.75*cellH);
+      glVertex2f (0.7*cellW,0.75*cellH);
+      glVertex2f (0.7*cellW,0.3*cellH);
+      //estrutura topo torre
+      glVertex2f (0.8*cellW,0.3*cellH);
+      glVertex2f (0.8*cellW,0.1*cellH);
+      glVertex2f (0.65*cellW,0.1*cellH);
+      glVertex2f (0.65*cellW,0.2*cellH);
+      glVertex2f (0.575*cellW,0.2*cellH);
+      glVertex2f (0.575*cellW,0.1*cellH);   
+      glVertex2f (0.425*cellW,0.1*cellH);
+      glVertex2f (0.425*cellW,0.2*cellH);   
+      glVertex2f (0.35*cellW,0.2*cellH); 
+      glVertex2f (0.35*cellW,0.1*cellH);
+      glVertex2f (0.2*cellW,0.1*cellH);
+      glVertex2f (0.2*cellW,0.3*cellH);
+      //fim  topo
+      glVertex2f (0.3*cellW,0.3*cellH);
+      glVertex2f (0.3*cellW,0.75*cellH);
+      glVertex2f (0.1*cellW,0.75*cellH);
+      glVertex2f (0.1*cellW,0.9*cellH);
+   glEnd();
+   glTranslatef(-minx,-miny,0.0);
+/*
 	glBegin(GL_QUADS);
 
 	glVertex2d(minx,miny);
@@ -104,6 +253,6 @@ void desenhaTorre(t_rect *regiao,int linha, int coluna,char time)
 	glVertex2d(minx,maxy);
 
 	glEnd();
-
-	return;
+*/
+   return;
 }
