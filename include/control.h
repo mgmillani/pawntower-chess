@@ -61,6 +61,15 @@ typedef struct s_controleHumano
 	int *estadoJogo;	//o estado do jogo (ver funcao fimDeJogo)
 }t_controleHumano;
 
+typedef struct s_iaData
+{
+	t_controleIA *controle;
+	void (*joga)(t_jogador*,char,t_jogada*,t_jogo*,void*);
+	void *data;
+
+}t_iaData;
+
+
 void iniciaControleIA(t_controleIA *controleIA, t_controle *controleMestre, char time);
 
 /**
@@ -79,9 +88,24 @@ void iniciaControle(t_controle *controle,t_jogo *jogo);
 int mestreDeJogo(t_controle *controle);
 
 /**
+  * algoritmo para uma jogada aleatoria
+  */
+void iaRandom(t_jogador* jogador,char time,t_jogada *jogada,t_jogo *jogo,void *data);
+
+/**
+  * wrapper para a criacao da thread
+  */
+int threadIa(t_iaData *data);
+
+/**
+  * thread para uma ia qualquer que usa a funcao joga para determinar sua jogada
+  */
+int jogadorIa(t_controleIA *controle,void (*)(t_jogador*,char,t_jogada*,t_jogo*,void*) ,void *data);
+
+/**
   * thread para uma ia randomica
   */
-int jogadorIaRandom(t_controleIA *controle);
+//int jogadorIaRandom(t_controleIA *controle);
 
 /**
   * thread para um jogador humano

@@ -89,11 +89,15 @@ int mestreDeJogo(t_controle *controle)
 	SDL_CondBroadcast(controle->inicioJogo);
 	//espera ate o sinal de inicio da partida para liberar o P1
 	SDL_CondWait(controle->inicioJogo,controle->turnoP1);
+	ERR("Mestre: received inicioJogo\n");
 	SDL_UnlockMutex(controle->turnoP1);
+	ERR("Mestre: unlocked P1\n");
 	while(estadoJogo==UNFINISHED)
 	{
 		//espera o primeiro terminar seu turno
 		SDL_CondWait(controle->fimTurno,trocaJogador);SDL_UnlockMutex(trocaJogador);
+		ERR("Mestre: received fimTurno\n");
+		ERR("Mestre: unlocked trocaJogador\n");
 		SDL_LockMutex(controle->turnoP1);
 		//executa a jogada de P1
 		executaJogada(controle->jogo,controle->jogada);
@@ -103,9 +107,12 @@ int mestreDeJogo(t_controle *controle)
 			break;
 		//libera o segundo jogador
 		SDL_UnlockMutex(controle->turnoP2);
+		ERR("Mestre: unlocked P2\n");
 		//espera o jogador terminar
 		SDL_LockMutex(controle->turnoP1);
+		ERR("Mestre: locked P1\n");
 		SDL_CondWait(controle->fimTurno,controle->turnoP1);
+		ERR("Mestre: received fimTurno\n");
 		//executa a jogada de P2
 		SDL_UnlockMutex(controle->turnoP1);
 		executaJogada(controle->jogo,controle->jogada);
@@ -128,12 +135,9 @@ int mestreDeJogo(t_controle *controle)
 	return estadoJogo;
 
 }
-/**
-  * thread para uma ia randomica
-  */
-int jogadorIaRandom(t_controleIA *controle)
+
+int jogadorIa(t_controleIA *controle, void (*joga)(t_jogador*,char,t_jogada*,t_jogo*,void*),void *data)
 {
-	ERR("IA criada\n");
 	int time = controle->time;
 	t_jogador *jogador;
 	if(time == P1)
@@ -141,67 +145,80 @@ int jogadorIaRandom(t_controleIA *controle)
 	else
 		jogador = &(controle->jogo->p2);
 	t_jogada *jogada = controle->jogada;
-	unsigned int movimentos[14];
-	unsigned int numMov = 0;
-	unsigned int capturas[14];
-	unsigned int numCapt = 0;
 
 	while(*(controle->estadoJogo) == UNFINISHED)
 	{
 		//inicia o turno
 		SDL_LockMutex(controle->turno);
-		numMov = 0;
-		numCapt = 0;
+
 		jogada->time = time;
-		//move uma peca aleatoriamente
-		while(numMov == 0 && numCapt == 0)
-		{
-			//escolhe uma peca
-			int peca = randrange(jogador->numTorres + jogador->numPeoes-1);
-			//se for menor que numPeoes, eh um peao
-			if(peca < jogador->numPeoes)
-			{
-				jogada->pecaOrigem = time | PEAO;
-				jogada->posOrigem = jogador->peaoPos[peca];
-			}
-			//caso contrario, eh uma torre
-			else
-			{
-				jogada->pecaOrigem = time | TORRE;
-				jogada->posOrigem = jogador->torrePos[peca-jogador->numPeoes];
-			}
-
-			movimentosPossiveis(controle->jogo->tabuleiro,jogada->posOrigem,movimentos,&numMov,capturas,&numCapt);
-		}
-
-		//se puder capturar, captura
-		if(numCapt>0)
-		{
-			int pos = randrange(numCapt-1);
-			jogada->posDestino = capturas[pos];
-		}
-		else
-		{
-			int pos = randrange(numMov-1);
-			jogada->posDestino = movimentos[pos];
-		}
+		joga(jogador,time,jogada,controle->jogo,data);
 
 		//termina o turno
+		int itime = time;
 		SDL_UnlockMutex(controle->turno);
-		//ERR("Ia unlocked turno\n");
+		ERR("Ia %d unlocked turno\n",itime);
 		SDL_LockMutex(controle->proximo);
-		//ERR("Ia locked proximo\n");
+		ERR("Ia %d locked proximo\n",itime);
 		SDL_CondBroadcast(controle->fimTurno);
-		//ERR("Ia signaled fimTurno\n");
+		ERR("Ia %d signaled fimTurno\n",itime);
 		SDL_CondBroadcast(controle->fimTurno2);
-		//ERR("Ia signaled fimTurno2\n");
+		ERR("Ia %d signaled fimTurno2\n",itime);
 		SDL_CondWait(controle->fimTurno2,controle->proximo);
-		//ERR("Ia received fimTurno2\n");
+		ERR("Ia %d received fimTurno2\n",itime);
 		SDL_UnlockMutex(controle->proximo);
-		//ERR("Ia unlocked proximo\n");
+		ERR("Ia %d unlocked proximo\n",itime);
 	}
 
 	return *(controle->estadoJogo);
+}
+
+void iaRandom(t_jogador *jogador,char time,t_jogada *jogada,t_jogo *jogo,void *data)
+{
+	unsigned int movimentos[14];
+	unsigned int numMov = 0;
+	unsigned int capturas[14];
+	unsigned int numCapt = 0;
+
+	while(numMov == 0 && numCapt == 0)
+	{
+		//escolhe uma peca
+		int peca = randrange(jogador->numTorres + jogador->numPeoes-1);
+		//se for menor que numPeoes, eh um peao
+		if(peca < jogador->numPeoes)
+		{
+			jogada->pecaOrigem = time | PEAO;
+			jogada->posOrigem = jogador->peaoPos[peca];
+		}
+		//caso contrario, eh uma torre
+		else
+		{
+			jogada->pecaOrigem = time | TORRE;
+			jogada->posOrigem = jogador->torrePos[peca-jogador->numPeoes];
+		}
+
+		movimentosPossiveis(jogo->tabuleiro,jogada->posOrigem,movimentos,&numMov,capturas,&numCapt);
+	}
+
+	//se puder capturar, captura
+	if(numCapt>0)
+	{
+		int pos = randrange(numCapt-1);
+		jogada->posDestino = capturas[pos];
+	}
+	else
+	{
+		int pos = randrange(numMov-1);
+		jogada->posDestino = movimentos[pos];
+	}
+}
+
+/**
+  * wrapper para a criacao da thread
+  */
+int threadIa(t_iaData *data)
+{
+	return jogadorIa(data->controle,data->joga,data->data);
 }
 
 /**

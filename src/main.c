@@ -99,12 +99,23 @@ int main(int argc, char *argv[])
 
 	t_controleIA ia2;
 	iniciaControleIA(&ia2,&controle,P2);
+	t_iaData iadata2;
+	iadata2.controle = &ia2;
+	iadata2.joga = iaRandom;
+	iadata2.data = NULL;
 
+	t_controleIA ia1;
+	iniciaControleIA(&ia1,&controle,P1);
+	t_iaData iadata1;
+	iadata1.controle = &ia1;
+	iadata1.joga = iaRandom;
+	iadata1.data = NULL;
 	ERR("Go!\n");
 	SDL_CondBroadcast(controle.inicioJogo);
 
+	//SDL_Thread *p1 = SDL_CreateThread((int (*)(void *))threadIa,&iadata1 );
 	SDL_Thread *p1 = SDL_CreateThread((int (*)(void *))jogadorHumano,&controleP1 );
-	SDL_Thread *p2 = SDL_CreateThread((int (*)(void *))jogadorIaRandom,&ia2 );
+	SDL_Thread *p2 = SDL_CreateThread((int (*)(void *))threadIa,&iadata2 );
 	//SDL_Thread *p2 = SDL_CreateThread((int (*)(void *))jogadorHumano,&controleP2 );
 
 	char quit = 0;
