@@ -107,11 +107,12 @@ void jogaHumano(t_jogador* jogador, char time, t_jogada *jogada, t_jogo *jogo,t_
 
 /**
   * verifica se o jogo acabou
-  * retorna 0 caso nao tenha terminado
+  * timeAtual eh o time que pode fazer a jogada (usado para determinar empates)
+  * retorna UNFINISHED caso nao tenha terminado
   * retorna o time do jogador que ganhou ou
-  * P1 | P2 caso tenha ocorrido empate
+  * DRAW caso tenha ocorrido empate
   */
-int fimDeJogo(t_jogo *jogo);
+int fimDeJogo(t_jogo *jogo,char timeAtual);
 
 /**
 	* executa a jogada. Deve ser chamada pela thread do mestreDeJogo

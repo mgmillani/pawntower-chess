@@ -1,3 +1,4 @@
+#include <SDL/SDL_opengl.h>
 #include <SDL/SDL.h>
 
 #include "interface.h"
@@ -17,14 +18,16 @@ void menuPrincipal(int *tipoP1,int *tipoP2,int screenWidth, int screenHeight)
 	botoes[0].x = 0.25;
 	botoes[0].y = 0.25;
 	botoes[0].w = 0.1;
-	botoes[0].w = 0.1;
+	botoes[0].h = 0.1;
 	while(escolha < 0)
 	{
 		double x,y;
 		SDL_Event event;
 		while(SDL_PollEvent(&event))
 		{
-			if(event.type==SDL_MOUSEMOTION)
+			if(event.type == SDL_QUIT)
+				escolha = 1;
+			else if(event.type==SDL_MOUSEMOTION)
 			{
 				x = event.motion.x / (double)screenWidth;
 				y = event.motion.y / (double)screenHeight;
@@ -36,10 +39,16 @@ void menuPrincipal(int *tipoP1,int *tipoP2,int screenWidth, int screenHeight)
 				y = event.motion.y / (double)screenHeight;
 				escolha = trataClique(botoes,numBotoes,x,y);
 			}
+			else if(event.type == SDL_KEYDOWN)
+			{
+				if(event.key.keysym.sym == SDLK_ESCAPE)
+					escolha = 1;
+			}
 		}
 
 		desenhaMenuPrincipal(botoes,numBotoes);
 		SDL_GL_SwapBuffers();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		SDL_Delay(10);
 	}
 

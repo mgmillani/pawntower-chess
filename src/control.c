@@ -114,7 +114,7 @@ int mestreDeJogo(t_controle *controle)
 		//executa a jogada de P1
 		executaJogada(controle->jogo,controle->jogada);
 		//verifica se o jogo acabou
-		estadoJogo = fimDeJogo(controle->jogo);
+		estadoJogo = fimDeJogo(controle->jogo,P2);
 		if(estadoJogo!=UNFINISHED)
 			break;
 		//termina o turno do primeiro
@@ -135,7 +135,7 @@ int mestreDeJogo(t_controle *controle)
 		//executa a jogada de P2
 		executaJogada(controle->jogo,controle->jogada);
 		//verifica se o jogo acabou
-		estadoJogo = fimDeJogo(controle->jogo);
+		estadoJogo = fimDeJogo(controle->jogo,P1);
 		if(estadoJogo!=UNFINISHED)
 			break;
 		//termina o turno do segundo
@@ -310,11 +310,12 @@ void jogaHumano(t_jogador* jogador, char time, t_jogada *jogada, t_jogo *jogo,t_
 
 /**
   * verifica se o jogo acabou
+  * timeAtual eh o time que pode fazer a jogada (usado para determinar empates)
   * retorna UNFINISHED caso nao tenha terminado
   * retorna o time do jogador que ganhou ou
   * DRAW caso tenha ocorrido empate
   */
-int fimDeJogo(t_jogo *jogo)
+int fimDeJogo(t_jogo *jogo,char timeAtual)
 {
 	t_jogador *p1 = &(jogo->p1);
 	t_jogador *p2 = &(jogo->p2);
@@ -341,36 +342,26 @@ int fimDeJogo(t_jogo *jogo)
 			return P2;
 	}
 
-	//se alguem nao pode se mover, ocorreu um empate
+	//se o time atual nao pode se mover, ocorreu um empate
+	t_jogador *jogador;
+	if(timeAtual == P1)
+		jogador = p1;
+	else
+		jogador = p2;
 	unsigned int mov[14];
 	unsigned int accumMov = 0;
 	unsigned int numMov = 0;
 	unsigned int numCapt = 0;
-	//peoes p1
-	for(i=0 ; i<p1->numPeoes ; i++)
+	//peoes
+	for(i=0 ; i<jogador->numPeoes && accumMov==0; i++)
 	{
-		movimentosPossiveis(jogo->tabuleiro,p1->peaoPos[i],mov,&numMov,mov,&numCapt);
+		movimentosPossiveis(jogo->tabuleiro,jogador->peaoPos[i],mov,&numMov,mov,&numCapt);
 		accumMov += numMov + numCapt;
 	}
-	//torres p1
-	for(i=0 ; i<p1->numTorres ; i++)
+	//torres
+	for(i=0 ; i<jogador->numTorres && accumMov==0; i++)
 	{
-		movimentosPossiveis(jogo->tabuleiro,p1->torrePos[i],mov,&numMov,mov,&numCapt);
-		accumMov += numMov + numCapt;
-	}
-	if(accumMov == 0)
-		return DRAW;
-
-	//peoes p2
-	for(i=0 ; i<p2->numPeoes ; i++)
-	{
-		movimentosPossiveis(jogo->tabuleiro,p2->peaoPos[i],mov,&numMov,mov,&numCapt);
-		accumMov += numMov + numCapt;
-	}
-	//torres p2
-	for(i=0 ; i<p2->numTorres ; i++)
-	{
-		movimentosPossiveis(jogo->tabuleiro,p2->torrePos[i],mov,&numMov,mov,&numCapt);
+		movimentosPossiveis(jogo->tabuleiro,jogador->torrePos[i],mov,&numMov,mov,&numCapt);
 		accumMov += numMov + numCapt;
 	}
 	if(accumMov == 0)
@@ -378,7 +369,6 @@ int fimDeJogo(t_jogo *jogo)
 
 	//caso nada disso ocorra, o jogo continua
 	return UNFINISHED;
-
 }
 
 /**

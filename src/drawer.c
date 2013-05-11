@@ -17,7 +17,7 @@ void desenhaMenuPrincipal(t_rect *botoes, int numBotoes)
 	for(i=0 ; i<numBotoes ; i++)
 	{
 		glBegin(GL_QUADS);
-		glColor3f(i/numBotoes,1-i/numBotoes,1);
+		glColor3f(i/(float)numBotoes,1-i/(float)numBotoes,1);
 		glVertex2d(botoes->x,botoes->y);
 		glVertex2d(botoes->x+botoes->w,botoes->y);
 		glVertex2d(botoes->x+botoes->w,botoes->y+botoes->h);

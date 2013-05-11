@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_thread.h>
@@ -93,7 +94,7 @@ int main(int argc, char *argv[])
 	int tipoP1 = HUMANO;
 	int tipoP2 = HUMANO;
 
-	//menuPrincipal(&tipoP1,&tipoP2,width,height);
+	menuPrincipal(&tipoP1,&tipoP2,width,height);
 
 	t_jogo jogo;
 	iniciaEstadoJogo(&jogo);
