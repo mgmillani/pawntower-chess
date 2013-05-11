@@ -27,8 +27,8 @@ void iniciaTabuleiro(unsigned char *tabuleiro)
 	//preenche as linhas dos peoes
 	for(pos=8,i=0 ; i< 8; i++,pos++)
 	{
-		tabuleiro[pos] = P2PEAO;
-		tabuleiro[pos+5*8] = P1PEAO;
+		tabuleiro[pos] = P2PEAO | ENPASSANT;
+		tabuleiro[pos+5*8] = P1PEAO | ENPASSANT;
 	}
 	//coloca as torres
 	tabuleiro[0] = P2TORRE;
@@ -67,6 +67,8 @@ t_jogo *iniciaEstadoJogo(t_jogo *jogo)
 		jogo->p1.peaoPos[i] = 8*6+i;
 		jogo->p2.peaoPos[i] = 8*1+i;
 	}
+
+	jogo->enpassant = 100;
 
 	return jogo;
 

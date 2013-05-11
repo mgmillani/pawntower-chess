@@ -13,6 +13,11 @@ typedef struct s_realce
 }t_realce;
 
 /**
+  * desenha os botoes do menu
+  */
+void desenhaMenuPrincipal(t_rect *botoes, int numBotoes);
+
+/**
   * desenha as pecas e o tabuleiro na regiao dada da tela
   */
 void desenhaJogo(t_rect *regiao, t_jogo *jogo);

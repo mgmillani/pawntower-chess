@@ -17,6 +17,7 @@ typedef struct s_jogo
 	unsigned char tabuleiro[64];
 	t_jogador p1;
 	t_jogador p2;
+	unsigned int enpassant;
 
 }t_jogo;
 

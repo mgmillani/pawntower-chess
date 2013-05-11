@@ -14,9 +14,20 @@
 #define P2PEAO      2 //010
 #define P2TORRE     3 //011
 #define VAZIO       4 //100
+#define ENPASSANT   8//1000
 
 #define UNFINISHED -1
 #define DRAW -2
+
+//tipo do jogador
+#define HUMANO 0
+#define MAQUINA 1
+
+//posicao dos botoes
+#define HH 0
+#define HM 1
+#define MH 2
+#define MM 3
 
 typedef struct s_rect
 {

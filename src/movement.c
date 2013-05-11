@@ -1,7 +1,9 @@
 #include <stdio.h>
 
 #include "movement.h"
+
 #include "definitions.h"
+#include "debug.h"
 
 //funcao para percorrer uma linha/coluna buscando possiveis movimentos/capturas
 void linhaScan(const unsigned char *tabuleiro,
@@ -15,6 +17,7 @@ void linhaScan(const unsigned char *tabuleiro,
               unsigned char time)
 {
 	int i;
+	//ERR("MIN:%d\tMAX:%d\tposAtual=%u\tdpos=%d\n",min,max,posAtual,deltaPos);
 
 	for(i=min ; i<=max ; i+=iDelta,posAtual+=deltaPos)
 	{
@@ -50,6 +53,7 @@ void movimentosPossiveis(const unsigned char *tabuleiro,unsigned int pos, unsign
 	*numMov = 0;
 	*numCapt = 0;
 	unsigned int move;
+	unsigned int move2;
 	unsigned int diagDir;
 	unsigned int diagEsq;
 	//determina o time
@@ -60,37 +64,65 @@ void movimentosPossiveis(const unsigned char *tabuleiro,unsigned int pos, unsign
 		if(time == P1)
 		{
 			move = pos-8;
+			move2 = pos-16;
 			diagDir = pos-7;
 			diagEsq = pos-9;
 		}
 		else
 		{
 			move = pos+8;
+			move2 = pos+16;
 			diagDir = pos+9;
 			diagEsq = pos+7;
 		}
 		//pode mover reto para cima, ou capturar na diagonal
-		if(VAZIO == tabuleiro[move])
+		if((VAZIO & tabuleiro[move]) != 0)
 		{
 			movimentos[0] = move;
 			(*numMov)++;
+			//na primeira jogada, pode mover duas casas
+			if((tabuleiro[pos] & ENPASSANT)!=0)
+			{
+				if((tabuleiro[move2] & VAZIO) !=0)
+				{
+					movimentos[1] = move2;
+					(*numMov)++;
+				}
+			}
 		}
+
 		//verifica em qual coluna a peca esta
 		unsigned int col = pos%8;
 		//caso nao seja a mais da esquerda, verifica a diagonal esquerda
 		if(col!=0)
-			if((tabuleiro[diagEsq] & MASCARATIME) != time && tabuleiro[diagEsq]!=VAZIO)
+		{
+			if((tabuleiro[diagEsq] & MASCARATIME) != time && ((tabuleiro[diagEsq] & VAZIO) == 0))
 			{
 				capturas[0] = diagEsq;
 				(*numCapt)++;
 			}
+			//verifica a possibilidade de en passant
+			if((tabuleiro[diagEsq] & MASCARATIME) != time && ((tabuleiro[diagEsq] & ENPASSANT) != 0))
+			{
+				capturas[*numCapt] = diagEsq;
+				(*numCapt)++;
+			}
+		}
 		//se nao for a mais da direita, verifica a diagonal direita
 		if(col<7)
-			if((tabuleiro[diagDir] & MASCARATIME) != time && tabuleiro[diagDir]!=VAZIO)
+		{
+			if((tabuleiro[diagDir] & MASCARATIME) != time && ((tabuleiro[diagDir] & VAZIO) == 0))
 			{
 				capturas[*numCapt] = diagDir;
 				(*numCapt)++;
 			}
+			//verifica a possibilidade de en passant
+			if((tabuleiro[diagDir] & MASCARATIME) != time && ((tabuleiro[diagDir] & ENPASSANT) != 0))
+			{
+				capturas[*numCapt] = diagDir;
+				(*numCapt)++;
+			}
+		}
 	}
 	//caso seja uma torre
 	else
@@ -135,14 +167,18 @@ void movePeca(t_jogo *jogo, unsigned char time,unsigned char pecaOrigem, unsigne
 
 	unsigned char *array;
 	unsigned char len;
+	unsigned int enpassant = 100;
+	int tipo;
 	//determina qual array deve ter a posicao da peca atualizada
 	if((pecaOrigem & MASCARAPECA)==PEAO)
 	{
+		tipo = PEAO;
 		array = jogadorA->peaoPos;
 		len = jogadorA->numPeoes;
 	}
 	else
 	{
+		tipo = TORRE;
 		array = jogadorA->torrePos;
 		len = jogadorA->numTorres;
 	}
@@ -155,7 +191,7 @@ void movePeca(t_jogo *jogo, unsigned char time,unsigned char pecaOrigem, unsigne
 	array[i] = posDestino;
 
 	//verifica se uma peca foi capturada
-	if(tabuleiro[posDestino] != VAZIO)
+	if((tabuleiro[posDestino] & VAZIO) ==0)
 	{
 		if((tabuleiro[posDestino] & MASCARAPECA) == PEAO)
 		{
@@ -175,10 +211,54 @@ void movePeca(t_jogo *jogo, unsigned char time,unsigned char pecaOrigem, unsigne
 			;
 		array[i] = array[len];
 	}
+	//verifica se eh um en passant
+	else if((tabuleiro[posDestino] & VAZIO) != 0 && ((tabuleiro[posDestino] & ENPASSANT) != 0) && tipo==PEAO)
+	{
+		//determina onde esta a peca capturada
+		int dir;
+		if(time == P1)
+			dir = 8;
+		else
+			dir = -8;
+		unsigned int posCaptura = posDestino + dir;
+
+		//remove a peca do adversario
+		array = jogadorB->peaoPos;
+		jogadorB->numPeoes--;
+		len = jogadorB->numPeoes; //valor da ultima posicao valida do array antes da remocao
+
+		//remove a peca do array
+		for(i=0 ; array[i]!=posCaptura ; i++)
+			;
+		array[i] = array[len];
+		//remove a peca do tabuleiro
+		tabuleiro[posCaptura] = VAZIO;
+
+	}
+	//verifica se eh um movimento duplo de um peao
+	else if(tipo==PEAO && ((tabuleiro[posOrigem] & ENPASSANT) != 0))
+	{
+		int dir;
+		if(time == P1)
+			dir = -8;
+		else
+			dir = 8;
+		//se for um movimento duplo
+		if(posDestino != posOrigem+dir)
+		{
+			//marca como uma posicao possivel de receber en passant
+			tabuleiro[posOrigem+dir] = ENPASSANT|VAZIO;
+			enpassant = posOrigem+dir;
+		}
+	}
 
 	//tira a peca de sua posicao
 	tabuleiro[posOrigem] = VAZIO;
 	//coloca a peca em sua devida posica
-	tabuleiro[posDestino] = pecaOrigem;
+	tabuleiro[posDestino] = pecaOrigem & ~ENPASSANT;
+	//limpa o en passant anterior
+	if(jogo->enpassant<64)
+		tabuleiro[jogo->enpassant] &= ~ENPASSANT;
+	jogo->enpassant = enpassant;
 }
 

@@ -37,7 +37,9 @@
 		<Unit filename="include/drawer.h" />
 		<Unit filename="include/frameControl.h" />
 		<Unit filename="include/init.h" />
+		<Unit filename="include/interface.h" />
 		<Unit filename="include/movement.h" />
+		<Unit filename="include/random.h" />
 		<Unit filename="src/control.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -50,10 +52,16 @@
 		<Unit filename="src/init.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="src/interface.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="src/main.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/movement.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/random.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Extensions>

@@ -10,48 +10,47 @@
 
 #include "debug.h"
 
-void iniciaControleIA(t_controleIA *controleIA, t_controle *controleMestre, char time)
+void iniciaControleJogador(t_controleJogador *controleJogador, t_controle *controleMestre, char time)
 {
 
-	controleIA->jogo = controleMestre->jogo;
-	controleIA->jogada = controleMestre->jogada;
-	controleIA->time = time;
-	controleIA->proximo = controleMestre->proximo;
+	controleJogador->jogo = controleMestre->jogo;
+	controleJogador->jogada = controleMestre->jogada;
+	controleJogador->time = time;
+
+	SDL_mutex **turno;
 
 	if(time == P1)
-		controleIA->turno = controleMestre->turnoP1;
+	{
+		turno = controleMestre->turnoP1;
+		controleJogador->turnoComeco = controleMestre->comecoP1;
+	}
 	else
-		controleIA->turno = controleMestre->turnoP2;
+	{
+		turno = controleMestre->turnoP2;
+		controleJogador->turnoComeco = controleMestre->comecoP2;
+	}
 
-	controleIA->fimTurno = controleMestre->fimTurno;
-	controleIA->fimTurno2 = controleMestre->fimTurno2;
-	controleIA->estadoJogo = &(controleMestre->estadoJogo);
+	int i;
+	for(i=0 ; i<TotalMutex ; i++)
+		controleJogador->turno[i] = turno[i];
+
+	controleJogador->estadoJogo = &(controleMestre->estadoJogo);
+
+	controleJogador->pronto = SDL_CreateSemaphore(1);
 
 }
 
 /**
   * inicia o controle de um jogador humano
   */
-void iniciaControleHumano(t_controleHumano *controleHumano,t_controle *controleMestre,char time,t_realce *realce, int *celulaX, int *celulaY, SDL_cond *houveEntrada)
+void iniciaControleHumano(t_controleHumano *controleHumano,t_realce *realce, int *celulaX, int *celulaY, SDL_sem *entradaRecebida,SDL_mutex *escreveEntrada)
 {
-
-	controleHumano->jogo = controleMestre->jogo;
-	controleHumano->jogada = controleMestre->jogada;
-	controleHumano->proximo = controleMestre->proximo;
-	controleHumano->time = time;
-	if(time == P1)
-		controleHumano->turno = controleMestre->turnoP1;
-	else
-		controleHumano->turno = controleMestre->turnoP2;
 
 	controleHumano->celulaX = celulaX;
 	controleHumano->celulaY = celulaY;
 
-	controleHumano->houveEntrada = houveEntrada;
-
-	controleHumano->estadoJogo = &(controleMestre->estadoJogo);
-	controleHumano->fimTurno = controleMestre->fimTurno;
-	controleHumano->fimTurno2 = controleMestre->fimTurno2;
+	controleHumano->entradaRecebida = entradaRecebida;
+	controleHumano->escreveEntrada = escreveEntrada;
 
 	controleHumano->realce = realce;
 
@@ -60,19 +59,26 @@ void iniciaControleHumano(t_controleHumano *controleHumano,t_controle *controleM
 /**
   * inicia o controle do jogo
   */
-void iniciaControle(t_controle *controle,t_jogo *jogo)
+void iniciaControle(t_controle *controle,t_jogo *jogo,SDL_mutex *jogoPronto,SDL_mutex *iniciaPartida)
 {
 	controle->jogo = jogo;
 	controle->jogada = malloc(sizeof(*(controle->jogada)));
 	//cria os mutexes
-	controle->proximo = SDL_CreateMutex();
-	controle->turnoP1 = SDL_CreateMutex();
-	controle->turnoP2 = SDL_CreateMutex();
-	//cria os conds
-	controle->fimTurno = SDL_CreateCond();
-	controle->fimTurno2 = SDL_CreateCond();
+	int i;
+	for(i=0 ; i< TotalMutex ; i++)
+	{
+		controle->turnoP1[i] = SDL_CreateMutex();
+		controle->turnoP2[i] = SDL_CreateMutex();
+	}
+
+	controle->comecoP1 = SDL_CreateSemaphore(1);
+	controle->comecoP2 = SDL_CreateSemaphore(1);
+
+	controle->inicioJogo = jogoPronto;
+	controle->iniciaPartida = iniciaPartida;
+
 	controle->estadoJogo = UNFINISHED;
-	controle->inicioJogo = SDL_CreateCond();
+
 }
 
 /**
@@ -81,62 +87,71 @@ void iniciaControle(t_controle *controle,t_jogo *jogo)
 int mestreDeJogo(t_controle *controle)
 {
 	int estadoJogo = UNFINISHED;
-	SDL_mutex *trocaJogador = SDL_CreateMutex();
-	SDL_LockMutex(trocaJogador);
 	//tranca ambos os jogadores ate o jogo comecar
-	SDL_LockMutex(controle->turnoP1);
-	SDL_LockMutex(controle->turnoP2);
-	SDL_CondBroadcast(controle->inicioJogo);
+	ERR("Mestre trancou :%p\n",controle->turnoP1[Poder]);
+	SDL_LockMutex(controle->turnoP1[Poder]);
+	ERR("Mestre trancou :%p\n",controle->turnoP2[Poder]);
+	SDL_LockMutex(controle->turnoP2[Poder]);
+	SDL_UnlockMutex(controle->inicioJogo);
 	//espera ate o sinal de inicio da partida para liberar o P1
-	SDL_CondWait(controle->inicioJogo,controle->turnoP1);
-	ERR("Mestre: received inicioJogo\n");
-	SDL_UnlockMutex(controle->turnoP1);
-	ERR("Mestre: unlocked P1\n");
-	while(estadoJogo==UNFINISHED)
+	SDL_LockMutex(controle->iniciaPartida);
+
+	do
 	{
+		//libera o primeiro jogador
+		//ERR("Mestre libera p1\n");
+		SDL_UnlockMutex(controle->turnoP1[Poder]);
 		//espera o primeiro terminar seu turno
-		SDL_CondWait(controle->fimTurno,trocaJogador);SDL_UnlockMutex(trocaJogador);
-		ERR("Mestre: received fimTurno\n");
-		ERR("Mestre: unlocked trocaJogador\n");
-		SDL_LockMutex(controle->turnoP1);
+		//ERR("Mestre espera p1\n");
+		SDL_LockMutex(controle->turnoP1[Jogar]);
+		SDL_UnlockMutex(controle->turnoP1[Jogar]);
+		//informa que recebeu a mensagem de P1
+		//ERR("Mestre confirma p1\n");
+		SDL_SemPost(controle->comecoP1);
+		//Impede-o de comecar outro turno
+		//ERR("Mestre tranca p1\n");
+		SDL_LockMutex(controle->turnoP1[Poder]);
 		//executa a jogada de P1
 		executaJogada(controle->jogo,controle->jogada);
 		//verifica se o jogo acabou
 		estadoJogo = fimDeJogo(controle->jogo);
 		if(estadoJogo!=UNFINISHED)
 			break;
+		//termina o turno do primeiro
+		SDL_SemPost(controle->comecoP1);
 		//libera o segundo jogador
-		SDL_UnlockMutex(controle->turnoP2);
-		ERR("Mestre: unlocked P2\n");
+		//ERR("Mestre libera p2\n");
+		SDL_UnlockMutex(controle->turnoP2[Poder]);
 		//espera o jogador terminar
-		SDL_LockMutex(controle->turnoP1);
-		ERR("Mestre: locked P1\n");
-		SDL_CondWait(controle->fimTurno,controle->turnoP1);
-		ERR("Mestre: received fimTurno\n");
+		//ERR("Mestre espera p2\n");
+		SDL_LockMutex(controle->turnoP2[Jogar]);
+		SDL_UnlockMutex(controle->turnoP2[Jogar]);
+		//informa que recebeu a mensagem
+		//ERR("Mestre informa p2\n");
+		SDL_SemPost(controle->comecoP2);
+		//Impede-o de comecar outro turno
+		//ERR("Mestre tranca p2\n");
+		SDL_LockMutex(controle->turnoP2[Poder]);
 		//executa a jogada de P2
-		SDL_UnlockMutex(controle->turnoP1);
 		executaJogada(controle->jogo,controle->jogada);
 		//verifica se o jogo acabou
 		estadoJogo = fimDeJogo(controle->jogo);
 		if(estadoJogo!=UNFINISHED)
 			break;
-		SDL_LockMutex(controle->turnoP2);
-		//libera o primeiro novamente
-		SDL_UnlockMutex(controle->turnoP1);
+		//termina o turno do segundo
+		SDL_SemPost(controle->comecoP2);
+	}while(estadoJogo==UNFINISHED);
 
-		//e espera ele terminar
-		SDL_LockMutex(trocaJogador);
-
-	}
-
-	SDL_DestroyMutex(trocaJogador);
 	ERR("GAME OVER!!!: %d\n",estadoJogo);
 	controle->estadoJogo = estadoJogo;
 	return estadoJogo;
 
 }
 
-int jogadorIa(t_controleIA *controle, void (*joga)(t_jogador*,char,t_jogada*,t_jogo*,void*),void *data)
+/**
+  * thread para um jogador qualquer que usa a funcao joga para determinar sua jogada
+  */
+int jogador(t_controleJogador *controle,void (*joga)(t_jogador*,char,t_jogada*,t_jogo*,void*) ,void *data)
 {
 	int time = controle->time;
 	t_jogador *jogador;
@@ -146,28 +161,39 @@ int jogadorIa(t_controleIA *controle, void (*joga)(t_jogador*,char,t_jogada*,t_j
 		jogador = &(controle->jogo->p2);
 	t_jogada *jogada = controle->jogada;
 
+	int i = 1;
+
 	while(*(controle->estadoJogo) == UNFINISHED)
 	{
 		//inicia o turno
-		SDL_LockMutex(controle->turno);
+		ERR("%d quer\n",(int)time);
+		SDL_SemWait(controle->turnoComeco);
+		ERR("%d jogar\n",(int)time);
+		SDL_LockMutex(controle->turno[Jogar]);
+		if(i>0)
+		{
+			SDL_SemPost(controle->pronto);
+			i--;
+		}
+		ERR("%d poder\n",(int)time);
+		SDL_LockMutex(controle->turno[Poder]);
+		ERR("%d esta jogando\n",(int)time);
 
 		jogada->time = time;
 		joga(jogador,time,jogada,controle->jogo,data);
 
 		//termina o turno
-		int itime = time;
-		SDL_UnlockMutex(controle->turno);
-		ERR("Ia %d unlocked turno\n",itime);
-		SDL_LockMutex(controle->proximo);
-		ERR("Ia %d locked proximo\n",itime);
-		SDL_CondBroadcast(controle->fimTurno);
-		ERR("Ia %d signaled fimTurno\n",itime);
-		SDL_CondBroadcast(controle->fimTurno2);
-		ERR("Ia %d signaled fimTurno2\n",itime);
-		SDL_CondWait(controle->fimTurno2,controle->proximo);
-		ERR("Ia %d received fimTurno2\n",itime);
-		SDL_UnlockMutex(controle->proximo);
-		ERR("Ia %d unlocked proximo\n",itime);
+		//ERR("%d libera jogar\n",(int)time);
+		SDL_UnlockMutex(controle->turno[Jogar]);
+		//ERR("%d espera mestre\n",(int)time);
+		SDL_SemWait(controle->turnoComeco);
+		//ERR("%d tranca jogar\n",(int)time);
+		SDL_LockMutex(controle->turno[Jogar]);
+		//ERR("%d libera poder\n",(int)time);
+		SDL_UnlockMutex(controle->turno[Poder]);
+		//ERR("%d post comeco\n",(int)time);
+		SDL_UnlockMutex(controle->turno[Jogar]);
+		//ERR("%d terminou\n",(int)time);
 	}
 
 	return *(controle->estadoJogo);
@@ -216,92 +242,70 @@ void iaRandom(t_jogador *jogador,char time,t_jogada *jogada,t_jogo *jogo,void *d
 /**
   * wrapper para a criacao da thread
   */
-int threadIa(t_iaData *data)
+int threadJogador(t_jogadorData *data)
 {
-	return jogadorIa(data->controle,data->joga,data->data);
+	return jogador(data->controle,data->joga,data->data);
 }
 
-/**
-  * thread para um jogador humano
-  */
-int jogadorHumano(t_controleHumano *controle)
+void jogaHumano(t_jogador* jogador, char time, t_jogada *jogada, t_jogo *jogo,t_controleHumano *controle)
 {
-	ERR("Jogador criado\n");
-	int time = controle->time;
-	SDL_mutex *entrada = SDL_CreateMutex();
 	t_realce *realce = controle->realce;
-	//se o jogo acabou, sai da funcao
-	while(*(controle->estadoJogo) == UNFINISHED)
+
+	int celulaAtiva = -1; //qual celula do tabuleiro esta ativa. -1 indica nenhuma
+	unsigned char peca;
+	char fimTurno = 0;
+	//inicia o turno
+	while(!fimTurno)
 	{
-		int celulaAtiva = -1; //qual celula do tabuleiro esta ativa. -1 indica nenhuma
-		unsigned char peca;
-		char fimTurno = 0;
-		//inicia o turno
-		/*ERR("Try Lock turno %d\n",(int)controle->time);*/
-		SDL_LockMutex(controle->turno);
-		/*ERR("Lock turno %d\n",(int)controle->time);*/
-		while(!fimTurno)
+		ERR("Ativa:%d\n",celulaAtiva);
+		//espera o usuario fazer algo
+		SDL_SemWait(controle->entradaRecebida);
+		SDL_LockMutex(controle->escreveEntrada);
+		unsigned int pos = *controle->celulaX + 8*(*controle->celulaY);
+		//se alguma celula estiver ativa
+		if(celulaAtiva>=0)
 		{
-			ERR("Jogador: %d\n",(int)controle->time);
-			ERR("Ativa:%d\n",celulaAtiva);
-			//espera o usuario fazer algo
-			SDL_LockMutex(entrada);
-			SDL_CondWait(controle->houveEntrada,entrada);
-			SDL_UnlockMutex(entrada);
-			unsigned int pos = *controle->celulaX + 8*(*controle->celulaY);
-			//se alguma celula estiver ativa
-			if(celulaAtiva>=0)
+			//se for uma celula para a qual podemos mover, move a peca para la
+			unsigned int i;
+			char move = 0;
+			for(i=0 ; i<realce->numMov &&!move ; i++)
+				if(realce->movimentos[i]==pos)
+					move = 1;
+			for(i=0 ; i<realce->numCapt &&!move ; i++)
+				if(realce->capturas[i]==pos)
+					move = 1;
+			if(move)
 			{
-				//se for uma celula para a qual podemos mover, move a peca para la
-				unsigned int i;
-				char move = 0;
-				for(i=0 ; i<realce->numMov &&!move ; i++)
-					if(realce->movimentos[i]==pos)
-						move = 1;
-				for(i=0 ; i<realce->numCapt &&!move ; i++)
-					if(realce->capturas[i]==pos)
-						move = 1;
-				if(move)
-				{
-					controle->jogada->time = controle->time;
-					controle->jogada->posOrigem = celulaAtiva;
-					controle->jogada->posDestino = pos;
-					controle->jogada->pecaOrigem = peca;
-					//termina o turno
-					fimTurno = 1;
-					SDL_UnlockMutex(controle->turno);
-					SDL_LockMutex(controle->proximo);
-					SDL_CondBroadcast(controle->fimTurno);
-					SDL_CondBroadcast(controle->fimTurno2);
-					SDL_CondWait(controle->fimTurno2,controle->proximo);
-					SDL_UnlockMutex(controle->proximo);
-				}
-				//se nao for, desmarca a peca
-				else
-				{
-					celulaAtiva = -1;
-				}
+				jogada->time = time;
+				jogada->posOrigem = celulaAtiva;
+				jogada->posDestino = pos;
+				jogada->pecaOrigem = peca;
+				//termina o turno
+				fimTurno = 1;
 			}
-			//se nenhuma celula estiver ativa
+			//se nao for, desmarca a peca
 			else
 			{
-				//se existe uma peca do jogador na posicao selecionada
-				if((controle->jogo->tabuleiro[pos] & MASCARATIME) == controle->time)
-				{
-					//marca a peca como selecionada
-					celulaAtiva = pos;
-					peca = controle->jogo->tabuleiro[pos];
-					//realca todas as celulas para as quais a peca pode se mover
-					movimentosPossiveis(controle->jogo->tabuleiro,pos,realce->movimentos,&realce->numMov,realce->capturas,&realce->numCapt);
-
-				}
+				celulaAtiva = -1;
+				ERR("Marcado: %d\n",jogo->tabuleiro[pos]);
 			}
 		}
+		//se nenhuma celula estiver ativa
+		else
+		{
+			//se existe uma peca do jogador na posicao selecionada
+			if((jogo->tabuleiro[pos] & MASCARATIME) == time)
+			{
+				//marca a peca como selecionada
+				celulaAtiva = pos;
+				peca = jogo->tabuleiro[pos];
+				//realca todas as celulas para as quais a peca pode se mover
+				movimentosPossiveis(jogo->tabuleiro,pos,realce->movimentos,&realce->numMov,realce->capturas,&realce->numCapt);
+
+			}
+		}
+		SDL_UnlockMutex(controle->escreveEntrada);
 	}
-
-	SDL_DestroyMutex(entrada);
-	return *(controle->estadoJogo);
-
 }
 
 /**

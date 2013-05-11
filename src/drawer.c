@@ -9,6 +9,24 @@
 #include "debug.h"
 
 /**
+  * desenha os botoes do menu
+  */
+void desenhaMenuPrincipal(t_rect *botoes, int numBotoes)
+{
+	int i;
+	for(i=0 ; i<numBotoes ; i++)
+	{
+		glBegin(GL_QUADS);
+		glColor3f(i/numBotoes,1-i/numBotoes,1);
+		glVertex2d(botoes->x,botoes->y);
+		glVertex2d(botoes->x+botoes->w,botoes->y);
+		glVertex2d(botoes->x+botoes->w,botoes->y+botoes->h);
+		glVertex2d(botoes->x,botoes->y+botoes->h);
+		glEnd();
+	}
+}
+
+/**
   * desenha as pecas e o tabuleiro na regiao dada da tela
   */
 void desenhaJogo(t_rect *regiao, t_jogo *jogo)
@@ -73,11 +91,11 @@ void desenhaPecas(t_rect *regiao,t_jogador *jogador, char time)
   */
 void desenhaPeao(t_rect *regiao,int linha, int coluna,char time)
 {
-  float cor;
+  float cor=0.0;
   if(time==P1)
-    cor = 1;
+     cor=1.0;
   else
-    cor = 0;
+     cor=0.0;
 
   double cellW = regiao->w/8;
   double cellH = regiao->h/8;
@@ -119,7 +137,7 @@ void desenhaPeao(t_rect *regiao,int linha, int coluna,char time)
   //linhas *cell
   glLineWidth(3);
   glBegin (GL_LINE_LOOP);
-  glColor3f (1-cor, 1-cor, 1-cor);
+  glColor3f (1.0-cor, 1.0-cor, 1.0-cor);
   glVertex2f (0.9*cellW,0.9*cellH);
   glVertex2f (0.9*cellW,0.8*cellH);
   glVertex2f (0.7*cellW,0.75*cellH);
@@ -163,9 +181,11 @@ void desenhaTorre(t_rect *regiao,int linha, int coluna,char time)
 {
    float cor=0.5;
    if(time==P1)
-     glColor3f(1.0,0.0,1.0);
+     cor=1.0;
+     //glColor3f(1.0,0.0,1.0);
    else
-     glColor3f(1.0,1.0,0.0);
+     cor=0.0;
+     //glColor3f(1.0,1.0,0.0);
 
    double cellW = regiao->w/8;
    double cellH = regiao->h/8;
@@ -215,11 +235,11 @@ void desenhaTorre(t_rect *regiao,int linha, int coluna,char time)
       glVertex2f (0.2*cellW,0.1*cellH);
       glVertex2f (0.35*cellW,0.1*cellH);
    glEnd();
-   glColor3f(1.0, 0.0, 1.0);
+   //glColor3f(1.0, 0.0, 1.0);
    //contorno
    glLineWidth(3);
    glBegin (GL_LINE_LOOP);
-   //glColor3f (1-cor, 1-cor, 1-cor);
+   glColor3f (1.0-cor, 1.0-cor, 1.0-cor);
       glVertex2f (0.9*cellW,0.9*cellH);
       glVertex2f (0.9*cellW,0.75*cellH);
       glVertex2f (0.7*cellW,0.75*cellH);

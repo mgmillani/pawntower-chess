@@ -6,6 +6,8 @@
 #include "movement.h"
 #include "drawer.h"
 
+typedef enum {Poder,Jogar,TotalMutex} e_mutex;
+
 typedef struct s_jogada
 {
 	unsigned char time;
@@ -18,16 +20,16 @@ typedef struct s_controle
 {
 	t_jogo *jogo;
 	t_jogada *jogada;
-	SDL_mutex *proximo;
-	SDL_mutex *turnoP1;
-	SDL_mutex *turnoP2;
-	SDL_cond *fimTurno;
-	SDL_cond *fimTurno2;
-	SDL_cond *inicioJogo;
+	SDL_sem *comecoP1;
+	SDL_sem *comecoP2;
+	SDL_mutex *turnoP1[TotalMutex];
+	SDL_mutex *turnoP2[TotalMutex];
+	SDL_mutex *inicioJogo;
+	SDL_mutex *iniciaPartida;
 	int estadoJogo;
 }t_controle;
 
-typedef struct s_controleIA
+typedef struct s_controleJogador
 {
 
 	t_jogo *jogo;
@@ -35,52 +37,43 @@ typedef struct s_controleIA
 
 	char time; //time do jogador
 
-	SDL_mutex *proximo;
-	SDL_mutex *turno;
-	SDL_cond *fimTurno;
-	SDL_cond *fimTurno2;
+	SDL_sem *turnoComeco;
+	SDL_sem *pronto;
+	SDL_mutex *turno[TotalMutex];
 	int *estadoJogo;	//o estado do jogo (ver funcao fimDeJogo)
 
-}t_controleIA;
+}t_controleJogador;
 
 typedef struct s_controleHumano
 {
-	t_jogo *jogo;
-	t_jogada *jogada;
-	int *celulaX;  //qual celula foi ativada
-	int *celulaY;
-	char time; //time do jogador
 	//variaveis para realce
 	t_realce *realce;
-
-	SDL_mutex *proximo;
-	SDL_mutex *turno;
-	SDL_cond *houveEntrada;
-	SDL_cond *fimTurno;
-	SDL_cond *fimTurno2;
-	int *estadoJogo;	//o estado do jogo (ver funcao fimDeJogo)
+	SDL_sem *entradaRecebida;
+	SDL_mutex *escreveEntrada;
+	int *celulaX;
+	int *celulaY;
 }t_controleHumano;
 
-typedef struct s_iaData
+typedef struct s_jogadorData
 {
-	t_controleIA *controle;
+	t_controleJogador *controle;
 	void (*joga)(t_jogador*,char,t_jogada*,t_jogo*,void*);
 	void *data;
 
-}t_iaData;
+}t_jogadorData;
 
 
-void iniciaControleIA(t_controleIA *controleIA, t_controle *controleMestre, char time);
+void iniciaControleJogador(t_controleJogador *controleJogador, t_controle *controleMestre, char time);
 
 /**
   * inicia o controle de um jogador humano
   */
-void iniciaControleHumano(t_controleHumano *controleHumano,t_controle *controleMestre,char time,t_realce *realce, int *celulaX, int *celulaY, SDL_cond *houveEntrada);
+void iniciaControleHumano(t_controleHumano *controleHumano,t_realce *realce, int *celulaX, int *celulaY, SDL_sem *entradaRecebida,SDL_mutex *escreveEntrada);
 
 /**
   * inicia o controle do jogo
   */
-void iniciaControle(t_controle *controle,t_jogo *jogo);
+void iniciaControle(t_controle *controle,t_jogo *jogo,SDL_mutex *jogoPronto,SDL_mutex *iniciaPartida);
 
 /**
 	* thread principal do jogo, a qual deve-se mandar os comandos de cada jogador
@@ -95,12 +88,12 @@ void iaRandom(t_jogador* jogador,char time,t_jogada *jogada,t_jogo *jogo,void *d
 /**
   * wrapper para a criacao da thread
   */
-int threadIa(t_iaData *data);
+int threadJogador(t_jogadorData *data);
 
 /**
-  * thread para uma ia qualquer que usa a funcao joga para determinar sua jogada
+  * thread para um jogador qualquer que usa a funcao joga para determinar sua jogada
   */
-int jogadorIa(t_controleIA *controle,void (*)(t_jogador*,char,t_jogada*,t_jogo*,void*) ,void *data);
+int jogador(t_controleJogador *controle,void (*)(t_jogador*,char,t_jogada*,t_jogo*,void*) ,void *data);
 
 /**
   * thread para uma ia randomica
@@ -110,7 +103,7 @@ int jogadorIa(t_controleIA *controle,void (*)(t_jogador*,char,t_jogada*,t_jogo*,
 /**
   * thread para um jogador humano
   */
-int jogadorHumano(t_controleHumano *controle);
+void jogaHumano(t_jogador* jogador, char time, t_jogada *jogada, t_jogo *jogo,t_controleHumano *controle);
 
 /**
   * verifica se o jogo acabou
