@@ -22,7 +22,7 @@ void linhaScan(const unsigned char *tabuleiro,
 	for(i=min ; i<=max ; i+=iDelta,posAtual+=deltaPos)
 	{
 
-		if(VAZIO == tabuleiro[posAtual])
+		if((VAZIO & tabuleiro[posAtual]) != 0)
 		{
 			movimentos[*numMov] = posAtual;
 			(*numMov)++;
@@ -151,6 +151,7 @@ void movimentosPossiveis(const unsigned char *tabuleiro,unsigned int pos, unsign
   */
 void movePeca(t_jogo *jogo, unsigned char time,unsigned char pecaOrigem, unsigned int posOrigem, unsigned int posDestino)
 {
+
 	unsigned char *tabuleiro = jogo->tabuleiro;
 	t_jogador *jogadorA; //jogador que moveu a peca
 	t_jogador *jogadorB; //outro jogador (pode ter perdido uma peca)
@@ -186,6 +187,7 @@ void movePeca(t_jogo *jogo, unsigned char time,unsigned char pecaOrigem, unsigne
 	//busca a posicao da peca no array e atualiza-a
 	//sabemos que ela esta no array
 	unsigned int i;
+
 	for(i=0 ; array[i]!=posOrigem ; i++)
 		;
 	array[i] = posDestino;
@@ -212,7 +214,7 @@ void movePeca(t_jogo *jogo, unsigned char time,unsigned char pecaOrigem, unsigne
 		array[i] = array[len];
 	}
 	//verifica se eh um en passant
-	else if((tabuleiro[posDestino] & VAZIO) != 0 && ((tabuleiro[posDestino] & ENPASSANT) != 0) && tipo==PEAO)
+	else if(((tabuleiro[posDestino] & VAZIO) != 0) && ((tabuleiro[posDestino] & ENPASSANT) != 0) && tipo==PEAO)
 	{
 		//determina onde esta a peca capturada
 		int dir;
@@ -254,7 +256,7 @@ void movePeca(t_jogo *jogo, unsigned char time,unsigned char pecaOrigem, unsigne
 
 	//tira a peca de sua posicao
 	tabuleiro[posOrigem] = VAZIO;
-	//coloca a peca em sua devida posica
+	//coloca a peca em sua devida posicao
 	tabuleiro[posDestino] = pecaOrigem & ~ENPASSANT;
 	//limpa o en passant anterior
 	if(jogo->enpassant<64)

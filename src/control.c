@@ -142,7 +142,19 @@ int mestreDeJogo(t_controle *controle)
 		SDL_SemPost(controle->comecoP2);
 	}while(estadoJogo==UNFINISHED);
 
-	ERR("GAME OVER!!!: %d\n",estadoJogo);
+	ERR("GAME OVER!!!\n");
+	switch(estadoJogo)
+	{
+		case DRAW:
+			ERR("O JOGO EMPATOU\n");
+			break;
+		case P1:
+			ERR("BRANCAS GANHARAM (1)\n");
+			break;
+		case P2:
+			ERR("PRETAS GANHARAM (2)\n");
+			break;
+	}
 	controle->estadoJogo = estadoJogo;
 	return estadoJogo;
 
@@ -166,18 +178,18 @@ int jogador(t_controleJogador *controle,void (*joga)(t_jogador*,char,t_jogada*,t
 	while(*(controle->estadoJogo) == UNFINISHED)
 	{
 		//inicia o turno
-		ERR("%d quer\n",(int)time);
+		//ERR("%d quer\n",(int)time);
 		SDL_SemWait(controle->turnoComeco);
-		ERR("%d jogar\n",(int)time);
+		//ERR("%d jogar\n",(int)time);
 		SDL_LockMutex(controle->turno[Jogar]);
 		if(i>0)
 		{
 			SDL_SemPost(controle->pronto);
 			i--;
 		}
-		ERR("%d poder\n",(int)time);
+		//ERR("%d poder\n",(int)time);
 		SDL_LockMutex(controle->turno[Poder]);
-		ERR("%d esta jogando\n",(int)time);
+		//ERR("%d esta jogando\n",(int)time);
 
 		jogada->time = time;
 		joga(jogador,time,jogada,controle->jogo,data);
@@ -197,46 +209,6 @@ int jogador(t_controleJogador *controle,void (*joga)(t_jogador*,char,t_jogada*,t
 	}
 
 	return *(controle->estadoJogo);
-}
-
-void iaRandom(t_jogador *jogador,char time,t_jogada *jogada,t_jogo *jogo,void *data)
-{
-	unsigned int movimentos[14];
-	unsigned int numMov = 0;
-	unsigned int capturas[14];
-	unsigned int numCapt = 0;
-
-	while(numMov == 0 && numCapt == 0)
-	{
-		//escolhe uma peca
-		int peca = randrange(jogador->numTorres + jogador->numPeoes-1);
-		//se for menor que numPeoes, eh um peao
-		if(peca < jogador->numPeoes)
-		{
-			jogada->pecaOrigem = time | PEAO;
-			jogada->posOrigem = jogador->peaoPos[peca];
-		}
-		//caso contrario, eh uma torre
-		else
-		{
-			jogada->pecaOrigem = time | TORRE;
-			jogada->posOrigem = jogador->torrePos[peca-jogador->numPeoes];
-		}
-
-		movimentosPossiveis(jogo->tabuleiro,jogada->posOrigem,movimentos,&numMov,capturas,&numCapt);
-	}
-
-	//se puder capturar, captura
-	if(numCapt>0)
-	{
-		int pos = randrange(numCapt-1);
-		jogada->posDestino = capturas[pos];
-	}
-	else
-	{
-		int pos = randrange(numMov-1);
-		jogada->posDestino = movimentos[pos];
-	}
 }
 
 /**
@@ -287,7 +259,7 @@ void jogaHumano(t_jogador* jogador, char time, t_jogada *jogada, t_jogo *jogo,t_
 			else
 			{
 				celulaAtiva = -1;
-				ERR("Marcado: %d\n",jogo->tabuleiro[pos]);
+				ERR("Marcado(%d): %d\n",pos,jogo->tabuleiro[pos]);
 			}
 		}
 		//se nenhuma celula estiver ativa
@@ -321,9 +293,9 @@ int fimDeJogo(t_jogo *jogo,char timeAtual)
 	t_jogador *p2 = &(jogo->p2);
 	//verifica se um jogador nao possui peoes
 	if(p1->numPeoes == 0)
-		return P1;
-	if(p2->numPeoes == 0)
 		return P2;
+	if(p2->numPeoes == 0)
+		return P1;
 
 	//verifica se algum jogador possui 1 peao em posicao de vitoria
 	unsigned int i;
@@ -331,13 +303,12 @@ int fimDeJogo(t_jogo *jogo,char timeAtual)
 	{
 		//se o peao de P1 chegou na linha 0, ele ganhou
 		if(p1->peaoPos[i]/8 == 0)
-		{
 			return P1;
-		}
 	}
 	for(i=0 ; i<p2->numPeoes ; i++)
 	{
 		//se o peao de P2 chegou na linha 7, ele ganhou
+		//ERR("i:%d\tp:%d\n",i,(int)p2->peaoPos[i]/8);
 		if(p2->peaoPos[i]/8 == 7)
 			return P2;
 	}
@@ -391,7 +362,7 @@ void printTabuleiro(unsigned char *tabuleiro)
 		int j;
 		for(j=0 ; j<8 ; j++,k++)
 		{
-			ERR("%d ",(int)tabuleiro[k]);
+			ERR("%02d ",(int)tabuleiro[k]);
 		}
 		ERR("\n");
 	}

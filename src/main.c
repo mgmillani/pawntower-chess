@@ -12,6 +12,7 @@
 #include "control.h"
 #include "drawer.h"
 #include "init.h"
+#include "ia.h"
 
 #include "definitions.h"
 #include "debug.h"
@@ -92,9 +93,10 @@ int main(int argc, char *argv[])
 	initFrameController(&ctrl,FPS);
 
 	int tipoP1 = HUMANO;
-	int tipoP2 = HUMANO;
+	int tipoP2 = MAQUINA;
+	int profundidade = 100;
 
-	menuPrincipal(&tipoP1,&tipoP2,width,height);
+	//menuPrincipal(&tipoP1,&tipoP2,width,height);
 
 	t_jogo jogo;
 	iniciaEstadoJogo(&jogo);
@@ -157,8 +159,9 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		jogador1Data.joga = iaRandom;
-		jogador1Data.data = NULL;
+		//jogador1Data.joga = iaRandom;
+		jogador1Data.joga = iaMinMax;
+		jogador1Data.data = &profundidade;
 		p1 = SDL_CreateThread((int (*)(void *))threadJogador,&jogador1Data);
 	}
 	if(tipoP2 == HUMANO)
@@ -170,8 +173,9 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		jogador2Data.joga = iaRandom;
-		jogador2Data.data = NULL;
+		//jogador2Data.joga = iaRandom;
+		jogador2Data.joga = iaMinMax;
+		jogador2Data.data = &profundidade;
 		p2 = SDL_CreateThread((int (*)(void *))threadJogador,&jogador2Data);
 	}
 
