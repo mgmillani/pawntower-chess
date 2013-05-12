@@ -50,13 +50,13 @@ void iaRandom(t_jogador *jogador,char time,t_jogada *jogada,t_jogo *jogo,void *d
 void iaMinMax(t_jogador *jogador,char time,t_jogada *jogada,t_jogo *jogo,void *data)
 {
 	unsigned int t0 = SDL_GetTicks();
-	int i = 1;
+	int i;
 	jogada->time = time;
 	int profundidade = *((int *)data);
-	for(i=0 ; i<profundidade && (SDL_GetTicks() - t0 < 5000); i++)
+	for(i=2 ; i<profundidade && (SDL_GetTicks() - t0 < 5000); i++)
 	{
 		ERR("Profundidade: %d\n",i);
-		miniMax(time,jogada,jogo,-2,2,1,i,1,t0);
+		ERR("Valor: %lf\n",miniMax(time,jogada,jogo,-2,2,1,i,1,t0));
 	}
 
 	ERR("O:%u\tD:%u\n",jogada->posOrigem,jogada->posDestino);
@@ -65,19 +65,19 @@ void iaMinMax(t_jogador *jogador,char time,t_jogada *jogada,t_jogo *jogo,void *d
 double miniMax(char time,t_jogada *jogada,t_jogo *jogoOrig,double alfa, double beta, int cor, unsigned int profundidade,char primeiro,unsigned int t0)
 {
 	t_jogador *jogador;
+	int filhos = 0;
 	if(profundidade == 0)
 	{
 		if(time == P1)
 			jogador = &jogoOrig->p1;
 		else
 			jogador = &jogoOrig->p2;
-		return cor * funcaoHeuristica(jogador,time,jogoOrig);
+		return funcaoHeuristica(jogador,time,jogoOrig);
 	}
 	else
 	{
 		if(SDL_GetTicks() - t0 > 5000)
 			return -2*cor;
-		//int filhos = 1;
 		char outroTime = (time==P1) ? P2 : P1;
 		t_jogo jogo;
 		memcpy(&jogo,jogoOrig,sizeof(*jogoOrig));
@@ -104,6 +104,7 @@ double miniMax(char time,t_jogada *jogada,t_jogo *jogoOrig,double alfa, double b
 		{
 			for(i=0 ; i<numPeca[t] ; i++ )
 			{
+				filhos++;
 				//faz uma copia do jogo original
 				memcpy(&jogo,jogoOrig,sizeof(*jogoOrig));
 				memcpy(&outroJogo,jogoOrig,sizeof(*jogoOrig));
@@ -154,11 +155,12 @@ double miniMax(char time,t_jogada *jogada,t_jogo *jogoOrig,double alfa, double b
 							val = -cor;
 						}
 						else
-							val = miniMax(outroTime,jogada,&jogo,-beta,-alfa,-cor,profundidade-1,0,t0);
-						if(val <= beta)
+							val = -miniMax(outroTime,jogada,&jogo,-beta,-alfa,-cor,profundidade-1,0,t0);
+						if(val >= beta)
 						{
 							if(primeiro)
 								memcpy(jogada,&bakJogada,sizeof(*jogada));
+							//ERR("(PRUNED)(%d) filhos: %d\n",profundidade,filhos);
 							return val;
 						}
 						if (val > alfa)
@@ -175,6 +177,7 @@ double miniMax(char time,t_jogada *jogada,t_jogo *jogoOrig,double alfa, double b
 		if(primeiro)
 			memcpy(jogada,&melhorJogada,sizeof(*jogada));
 	}
+	//ERR("(%d) filhos: %d\n",profundidade,filhos);
 	return alfa;
 }
 
@@ -189,33 +192,49 @@ double funcaoHeuristica(t_jogador* jogador,char time, t_jogo* jogo)
 	int sinal;
 	if(time == P1)
 	{
-		partida = 2;
-		sinal = -1;
+		partida = 1;
+		sinal = 1;
 	}
 	else
 	{
-		partida = 5;
-		sinal = 1;
+		partida = 6;
+		sinal = -1;
 	}
 
 	//soma o numero de pecas
 	int valor = 0;
 	int pecas = 0;
 	pecas += jogador->numPeoes;
-	pecas += jogador->numTorres;
+	pecas += jogador->numTorres*2;
 
 	//verifica quao perto estao os peoes da vitoria
 	int i;
-	int maisProximo = 8;
+	int maisProximo = 0;
 	for(i=0 ; i<jogador->numPeoes ; i++)
 	{
-		int proximidade = ((jogador->peaoPos[i]/7)-partida)*sinal;
+		int proximidade = ((jogador->peaoPos[i]/8)-partida)*sinal;
 		valor += proximidade;
-		if(proximidade < maisProximo)
+		if(proximidade > maisProximo)
 			maisProximo = proximidade;
 	}
 
-	return ((valor/8*7) + ((double)pecas/10) + ((double)maisProximo/7))/4.0;
+	double valores[3];
+	valores[0] = (double)valor/(8*5);
+	valores[1] = (double)pecas/14;
+	valores[2] = (double)maisProximo/6;
+
+	int k;
+	/*ERR("Valor: %d\n",valor);
+	ERR("Pecas: %d\n",pecas);
+	ERR("mais proximo: %d\n",maisProximo);
+	ERR("%%%%%%%%%%%%%\n");
+	for(k=0 ; k<3 ; k++)
+		ERR("V[%d] = %lf\n",k,valores[k]);
+	ERR("%%%%%%%%%%%%%\n");*/
+	double final = (valores[0] + valores[1] + valores[2])/3.5;
+	//ERR("Final: %lf\n",final);
+
+	return final;
 
 }
 

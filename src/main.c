@@ -41,7 +41,7 @@ int init(SDL_Surface **screen,int width,int height,int bpp,int options)
 	//opengl stuff
 	glDisable(GL_DEPTH_TEST);
 
-	glClearColor(1.0f,1.0f,1.0f,0.0f);
+	glClearColor(0.7f,1.0f,0.7f,0.0f);
 	glViewport(0,0,width,height);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glMatrixMode(GL_PROJECTION);
@@ -65,7 +65,6 @@ int main(int argc, char *argv[])
 	time_t seed;
 	seed = time(NULL);
 	srand(seed);
-
 
 	int width = WIDTH;
 	int height = HEIGHT;
