@@ -23,6 +23,125 @@
 #define FPS 50
 
 const char gProgName[] = "Pawntower Chess";
+const char gConfFile[] = "config";
+
+void carregaConfig(const char *fname, int *width, int *height, int *tipoP1, int *tipoP2)
+{
+
+	typedef enum {State_NewLine,State_Rvalue,State_Equal,State_Lvalue} t_state;
+
+	t_state estado = State_NewLine;
+
+	FILE *fl = fopen(fname,"rb");
+	unsigned int size;
+	fseek(fl,0,SEEK_END);
+	size = ftell(fl);
+	fseek(fl,0,SEEK_SET);
+
+	char *data = malloc(size+1);
+	fread(data,1,size,fl);
+	data[size] = '\0';
+	fclose(fl);
+	int i;
+	int bl,br;
+	int el,er;
+
+	for(i=0 ; data[i]!='\0' ; i++)
+	{
+		char c = data[i];
+		switch(estado)
+		{
+			case State_NewLine:
+				bl = i;
+				estado = State_Lvalue;
+				break;
+			case State_Lvalue:
+				if(c=='=')
+				{
+					//terminou a palavra esquerda
+					el = i;
+					br = i+1;
+					estado = State_Equal;
+				}
+				else if(c==' ')
+				{
+					el = i;
+					estado = State_Equal;
+				}
+				break;
+			case State_Equal:
+				if(c != ' ' && c != '=')
+				{
+					br = i;
+					estado = State_Rvalue;
+				}
+				break;
+			case State_Rvalue:
+				if(c=='\r' || c=='\n')
+				{
+					estado = State_NewLine;
+					er = i;
+					char aux = data[el];
+					char aux2 = data[er];
+					data[el] = '\0';
+					data[er] = '\0';
+					if(strcmp("width",data+bl)==0)
+						sscanf(data+br,"%d",width);
+					else if(strcmp("height",data+bl)==0)
+						sscanf(data+br,"%d",height);
+					else if(strcmp("black",data+bl)==0)
+					{
+						if(strcmp("human",data+br)==0)
+							*tipoP2 = HUMANO;
+						else
+							*tipoP2 = MAQUINA;
+					}
+					else if(strcmp("white",data+bl)==0)
+					{
+						if(strcmp("human",data+br)==0)
+							*tipoP1 = HUMANO;
+						else
+							*tipoP1 = MAQUINA;
+					}
+
+					data[el] = aux;
+					data[er] = aux2;
+				}
+				break;
+		}
+	}
+
+	if(estado != State_NewLine)
+	{
+		er = i;
+		char aux = data[el];
+		char aux2 = data[er];
+		data[el] = '\0';
+		data[er] = '\0';
+		if(strcmp("width",data+bl)==0)
+			sscanf(data+br,"%d",&width);
+		else if(strcmp("height",data+bl)==0)
+			sscanf(data+br,"%d",&height);
+		else if(strcmp("black",data+bl)==0)
+		{
+			if(strcmp("human",data+br)==0)
+				*tipoP2 = HUMANO;
+			else
+				*tipoP2 = MAQUINA;
+		}
+		else if(strcmp("black",data+bl)==0)
+		{
+			if(strcmp("human",data+br)==0)
+				*tipoP1 = HUMANO;
+			else
+				*tipoP1 = MAQUINA;
+		}
+
+		data[el] = aux;
+		data[er] = aux2;
+	}
+
+}
 
 //inits stuff and the screen
 int init(SDL_Surface **screen,int width,int height,int bpp,int options)
@@ -66,14 +185,13 @@ int main(int argc, char *argv[])
 	seed = time(NULL);
 	srand(seed);
 
+	int tipoP1 = HUMANO;
+	int tipoP2 = MAQUINA;
+	int profundidade = 100;
 	int width = WIDTH;
 	int height = HEIGHT;
-	if(argc == 3)
-	{
-		sscanf(argv[1], "%d",&width);
-		sscanf(argv[2], "%d",&height);
-	}
 
+	carregaConfig(gConfFile,&width,&height,&tipoP1,&tipoP2);
 
 	//inicializacao
 	SDL_Surface *screen;
@@ -90,10 +208,6 @@ int main(int argc, char *argv[])
 	//frame controller
 	t_frameController ctrl;
 	initFrameController(&ctrl,FPS);
-
-	int tipoP1 = HUMANO;
-	int tipoP2 = MAQUINA;
-	int profundidade = 100;
 
 	//menuPrincipal(&tipoP1,&tipoP2,width,height);
 

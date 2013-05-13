@@ -53,10 +53,10 @@ void iaMinMax(t_jogador *jogador,char time,t_jogada *jogada,t_jogo *jogo,void *d
 	int i;
 	jogada->time = time;
 	int profundidade = *((int *)data);
-	for(i=2 ; i<profundidade && (SDL_GetTicks() - t0 < 5000); i++)
+	for(i=3 ; i<profundidade && (SDL_GetTicks() - t0 < 5000); i++)
 	{
 		ERR("Profundidade: %d\n",i);
-		ERR("Valor: %lf\n",miniMax(time,jogada,jogo,-2,2,1,i,1,t0));
+		miniMax(time,jogada,jogo,-2,2,1,i,1,t0);
 	}
 
 	ERR("O:%u\tD:%u\n",jogada->posOrigem,jogada->posDestino);
@@ -146,13 +146,13 @@ double miniMax(char time,t_jogada *jogada,t_jogo *jogoOrig,double alfa, double b
 						{
 							//ERR("VITORIA %d\n",(int)time);
 							//ERR("Val = %d\n",cor);
-							val = cor;
+							val = 1;
 						}
 						else if(estado == outroTime)
 						{
 							//ERR("DERROTA %d\n",(int)time);
 							//ERR("Val = %d\n",-cor);
-							val = -cor;
+							val = -1;
 						}
 						else
 							val = -miniMax(outroTime,jogada,&jogo,-beta,-alfa,-cor,profundidade-1,0,t0);
@@ -221,18 +221,9 @@ double funcaoHeuristica(t_jogador* jogador,char time, t_jogo* jogo)
 	double valores[3];
 	valores[0] = (double)valor/(8*5);
 	valores[1] = (double)pecas/14;
-	valores[2] = (double)maisProximo/6;
+	valores[2] = (double)maisProximo/5;
 
-	int k;
-	/*ERR("Valor: %d\n",valor);
-	ERR("Pecas: %d\n",pecas);
-	ERR("mais proximo: %d\n",maisProximo);
-	ERR("%%%%%%%%%%%%%\n");
-	for(k=0 ; k<3 ; k++)
-		ERR("V[%d] = %lf\n",k,valores[k]);
-	ERR("%%%%%%%%%%%%%\n");*/
 	double final = (valores[0] + valores[1] + valores[2])/3.5;
-	//ERR("Final: %lf\n",final);
 
 	return final;
 
