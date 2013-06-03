@@ -24,8 +24,8 @@ typedef struct s_controle
 	SDL_sem *comecoP2;
 	SDL_mutex *turnoP1[TotalMutex];
 	SDL_mutex *turnoP2[TotalMutex];
-	SDL_mutex *inicioJogo;
-	SDL_mutex *iniciaPartida;
+	SDL_sem *inicioJogo;
+	SDL_sem *iniciaPartida;
 	int estadoJogo;
 }t_controle;
 
@@ -73,7 +73,7 @@ void iniciaControleHumano(t_controleHumano *controleHumano,t_realce *realce, int
 /**
   * inicia o controle do jogo
   */
-void iniciaControle(t_controle *controle,t_jogo *jogo,SDL_mutex *jogoPronto,SDL_mutex *iniciaPartida);
+void iniciaControle(t_controle *controle,t_jogo *jogo,SDL_sem *jogoPronto,SDL_sem *iniciaPartida);
 
 /**
 	* thread principal do jogo, a qual deve-se mandar os comandos de cada jogador

@@ -5,51 +5,12 @@
 #include "movement.h"
 #include "control.h"
 #include "random.h"
+#include "oldIa.h"
 #include "ia.h"
 
 #include "debug.h"
 
-void iaRandom(t_jogador *jogador,char time,t_jogada *jogada,t_jogo *jogo,void *data)
-{
-	unsigned int movimentos[14];
-	unsigned int numMov = 0;
-	unsigned int capturas[14];
-	unsigned int numCapt = 0;
-
-	while(numMov == 0 && numCapt == 0)
-	{
-		//escolhe uma peca
-		int peca = randrange(jogador->numTorres + jogador->numPeoes-1);
-		//se for menor que numPeoes, eh um peao
-		if(peca < jogador->numPeoes)
-		{
-			jogada->pecaOrigem = time | PEAO;
-			jogada->posOrigem = jogador->peaoPos[peca];
-		}
-		//caso contrario, eh uma torre
-		else
-		{
-			jogada->pecaOrigem = time | TORRE;
-			jogada->posOrigem = jogador->torrePos[peca-jogador->numPeoes];
-		}
-
-		movimentosPossiveis(jogo->tabuleiro,jogada->posOrigem,movimentos,&numMov,capturas,&numCapt);
-	}
-
-	//se puder capturar, captura
-	if(numCapt>0)
-	{
-		int pos = randrange(numCapt-1);
-		jogada->posDestino = capturas[pos];
-	}
-	else
-	{
-		int pos = randrange(numMov-1);
-		jogada->posDestino = movimentos[pos];
-	}
-}
-
-void iaMinMax(t_jogador *jogador,char time,t_jogada *jogada,t_jogo *jogo,void *data)
+void iaMinMaxOld(t_jogador *jogador,char time,t_jogada *jogada,t_jogo *jogo,void *data)
 {
 	unsigned int t0 = SDL_GetTicks();
 	unsigned int i;
@@ -57,33 +18,31 @@ void iaMinMax(t_jogador *jogador,char time,t_jogada *jogada,t_jogo *jogo,void *d
 	t_miniMax *parametros = data;
 	unsigned int profundidade = parametros->profundidadeMaxima;
 	unsigned int tempo = parametros->tempoMaximo;
-
-	double melhorValor = -5;
-	t_jogada melhorJogada;
-
+	ERR("Tempo: %u\n",tempo);
+	ERR("Profundidade: %u\n",profundidade);
 	for(i=1 ; i<profundidade && (SDL_GetTicks() - t0 < tempo); i++)
 	{
 		ERR("Profundidade: %d\n",i);
-		double val = fabs(miniMax(time,jogada,jogo,-2,2,1,i,tempo,1,t0));
-		if(val > melhorValor && val < 2)
-		{
-			melhorValor = val;
-			memcpy(&melhorJogada,jogada,sizeof(melhorJogada));
-		}
+		double val = miniMaxOld(time,jogada,jogo,-2,2,1,i,tempo,1,t0);
 		ERR("Valor :%lf\n",val);
+		ERR("O:%u\tD:%u\n",jogada->posOrigem,jogada->posDestino);
 	}
 
-	memcpy(jogada,&melhorJogada,sizeof(melhorJogada));
 	ERR("O:%u\tD:%u\n",jogada->posOrigem,jogada->posDestino);
 }
 
-double miniMax(char time,t_jogada *jogada,t_jogo *jogoOrig,double alfa, double beta, int cor, unsigned int profundidade,unsigned int tempoMax,char primeiro,unsigned int t0)
+double miniMaxOld(char time,t_jogada *jogada,t_jogo *jogoOrig,double alfa, double beta, int cor, unsigned int profundidade,unsigned int tempoMax,char primeiro,unsigned int t0)
 {
 	t_jogador *jogador;
 	int filhos = 0;
 	if(profundidade == 0)
 	{
-		return funcaoHeuristica(time,jogoOrig);
+		if(time == P1)
+			jogador = &jogoOrig->p1;
+		else
+			jogador = &jogoOrig->p2;
+
+		return funcaoHeuristicaOld(jogador,time,jogoOrig);
 	}
 	else
 	{
@@ -126,7 +85,7 @@ double miniMax(char time,t_jogada *jogada,t_jogo *jogoOrig,double alfa, double b
 				unsigned int peca = jogo.tabuleiro[pos];
 
 				unsigned int k;
-				//aplica o negamax para cada jogada possivel
+				//aplica o negamax para cafuncaoHeuristicaOldda jogada possivel
 				unsigned int j;
 				unsigned int *tipoMovimento[2] = {capturas,movimentos};
 				unsigned int numMovimento[2] = {numCapt,numMov};
@@ -168,7 +127,7 @@ double miniMax(char time,t_jogada *jogada,t_jogo *jogoOrig,double alfa, double b
 							val = -1;
 						}
 						else
-							val = -miniMax(outroTime,jogada,&jogo,-beta,-alfa,-cor,profundidade-1,tempoMax,0,t0);
+							val = -miniMaxOld(outroTime,jogada,&jogo,-beta,-alfa,-cor,profundidade-1,tempoMax,0,t0);
 						if(val >= beta)
 						{
 							if(primeiro)
@@ -198,34 +157,19 @@ double miniMax(char time,t_jogada *jogada,t_jogo *jogoOrig,double alfa, double b
   * determina quao bom eh o jogo para o jogador
   * retorna um valor em [-1,1]
   */
-double funcaoHeuristica(char time, t_jogo* jogo)
+double funcaoHeuristicaOld(t_jogador* jogador,char time, t_jogo* jogo)
 {
-	//char outroTime = time==P1?P2 : P1;
-	char outroTime;
-	if(time==P1)
-		outroTime = P2;
-	else
-		outroTime = P1;
-
-	return funcaoHeuristicaJogador(time,jogo) - funcaoHeuristicaJogador(outroTime,jogo);
-}
-
-double funcaoHeuristicaJogador(char time, t_jogo* jogo)
-{
-	t_jogador *jogador;
 	unsigned int partida;
 	int sinal;
 	if(time == P1)
 	{
 		partida = 1;
 		sinal = 1;
-		jogador = &jogo->p1;
 	}
 	else
 	{
 		partida = 6;
 		sinal = -1;
-		jogador = &jogo->p2;
 	}
 
 	//soma o numero de pecas
@@ -255,4 +199,5 @@ double funcaoHeuristicaJogador(char time, t_jogo* jogo)
 	return final;
 
 }
+
 

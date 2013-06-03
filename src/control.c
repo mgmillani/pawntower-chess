@@ -59,7 +59,7 @@ void iniciaControleHumano(t_controleHumano *controleHumano,t_realce *realce, int
 /**
   * inicia o controle do jogo
   */
-void iniciaControle(t_controle *controle,t_jogo *jogo,SDL_mutex *jogoPronto,SDL_mutex *iniciaPartida)
+void iniciaControle(t_controle *controle,t_jogo *jogo,SDL_sem *jogoPronto,SDL_sem *iniciaPartida)
 {
 	controle->jogo = jogo;
 	controle->jogada = malloc(sizeof(*(controle->jogada)));
@@ -92,9 +92,9 @@ int mestreDeJogo(t_controle *controle)
 	SDL_LockMutex(controle->turnoP1[Poder]);
 	ERR("Mestre trancou :%p\n",controle->turnoP2[Poder]);
 	SDL_LockMutex(controle->turnoP2[Poder]);
-	SDL_UnlockMutex(controle->inicioJogo);
+	SDL_SemPost(controle->inicioJogo);
 	//espera ate o sinal de inicio da partida para liberar o P1
-	SDL_LockMutex(controle->iniciaPartida);
+	SDL_SemWait(controle->iniciaPartida);
 
 	do
 	{

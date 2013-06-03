@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="debug" />
+	<File name="include/control.h" open="0" top="0" tabpos="5">
+		<Cursor position="2869" topLine="0" />
+	</File>
+	<File name="include/definitions.h" open="0" top="0" tabpos="4">
+		<Cursor position="382" topLine="0" />
+	</File>
+	<File name="include/drawer.h" open="0" top="0" tabpos="2">
+		<Cursor position="320" topLine="1" />
+	</File>
+	<File name="include/frameControl.h" open="0" top="0" tabpos="4">
+		<Cursor position="88" topLine="0" />
+	</File>
+	<File name="include/ia.h" open="0" top="0" tabpos="2">
+		<Cursor position="513" topLine="1" />
+	</File>
+	<File name="include/init.h" open="0" top="0" tabpos="0">
+		<Cursor position="335" topLine="0" />
+	</File>
+	<File name="include/interface.h" open="0" top="0" tabpos="0">
+		<Cursor position="65" topLine="0" />
+	</File>
+	<File name="include/movement.h" open="0" top="0" tabpos="4">
+		<Cursor position="172" topLine="0" />
+	</File>
+	<File name="include/oldIa.h" open="0" top="0" tabpos="0">
+		<Cursor position="337" topLine="0" />
+	</File>
+	<File name="include/random.h" open="0" top="0" tabpos="0">
+		<Cursor position="35" topLine="0" />
+	</File>
+	<File name="src/control.c" open="0" top="0" tabpos="2">
+		<Cursor position="5782" topLine="146" />
+	</File>
+	<File name="src/drawer.c" open="0" top="0" tabpos="5">
+		<Cursor position="354" topLine="0" />
+	</File>
+	<File name="src/frameControl.c" open="0" top="0" tabpos="5">
+		<Cursor position="328" topLine="0" />
+	</File>
+	<File name="src/ia.c" open="1" top="0" tabpos="2">
+		<Cursor position="5378" topLine="201" />
+	</File>
+	<File name="src/init.c" open="0" top="0" tabpos="2">
+		<Cursor position="612" topLine="12" />
+	</File>
+	<File name="src/interface.c" open="0" top="0" tabpos="0">
+		<Cursor position="631" topLine="21" />
+	</File>
+	<File name="src/main.c" open="1" top="0" tabpos="1">
+		<Cursor position="7052" topLine="288" />
+	</File>
+	<File name="src/movement.c" open="0" top="0" tabpos="6">
+		<Cursor position="6798" topLine="0" />
+	</File>
+	<File name="src/oldIa.c" open="1" top="0" tabpos="3">
+		<Cursor position="781" topLine="0" />
+	</File>
+	<File name="src/random.c" open="0" top="0" tabpos="0">
+		<Cursor position="68" topLine="0" />
+	</File>
+</CodeBlocks_layout_file>

@@ -13,6 +13,7 @@
 #include "drawer.h"
 #include "init.h"
 #include "ia.h"
+#include "oldIa.h"
 
 #include "definitions.h"
 #include "debug.h"
@@ -25,7 +26,7 @@
 const char gProgName[] = "Pawntower Chess";
 const char gConfFile[] = "config";
 
-void carregaConfig(const char *fname, int *width, int *height, int *tipoP1, int *tipoP2)
+void carregaConfig(const char *fname, int *width, int *height,unsigned int *maxDepth, unsigned int *maxTime, int *tipoP1, int *tipoP2)
 {
 
 	typedef enum {State_NewLine,State_Rvalue,State_Equal,State_Lvalue} t_state;
@@ -89,6 +90,10 @@ void carregaConfig(const char *fname, int *width, int *height, int *tipoP1, int 
 						sscanf(data+br,"%d",width);
 					else if(strcmp("height",data+bl)==0)
 						sscanf(data+br,"%d",height);
+					else if(strcmp("depth",data+bl)==0)
+						sscanf(data+br,"%u",maxDepth);
+					else if(strcmp("time",data+bl)==0)
+						sscanf(data+br,"%u",maxTime);
 					else if(strcmp("black",data+bl)==0)
 					{
 						if(strcmp("human",data+br)==0)
@@ -119,9 +124,13 @@ void carregaConfig(const char *fname, int *width, int *height, int *tipoP1, int 
 		data[el] = '\0';
 		data[er] = '\0';
 		if(strcmp("width",data+bl)==0)
-			sscanf(data+br,"%d",&width);
+			sscanf(data+br,"%d",width);
 		else if(strcmp("height",data+bl)==0)
-			sscanf(data+br,"%d",&height);
+			sscanf(data+br,"%d",height);
+		else if(strcmp("depth",data+bl)==0)
+			sscanf(data+br,"%u",maxDepth);
+		else if(strcmp("time",data+bl)==0)
+			sscanf(data+br,"%u",maxTime);
 		else if(strcmp("black",data+bl)==0)
 		{
 			if(strcmp("human",data+br)==0)
@@ -171,10 +180,6 @@ int init(SDL_Surface **screen,int width,int height,int bpp,int options)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	//SDL_image
-	//if(IMG_Init(IMG_INIT_PNG)==0)
-	//	return -1;
-
 	return 0;
 }
 
@@ -187,11 +192,12 @@ int main(int argc, char *argv[])
 
 	int tipoP1 = HUMANO;
 	int tipoP2 = MAQUINA;
-	int profundidade = 100;
+	unsigned int profundidade = 100;
+	unsigned int tempoMax = 5000;
 	int width = WIDTH;
 	int height = HEIGHT;
 
-	carregaConfig(gConfFile,&width,&height,&tipoP1,&tipoP2);
+	carregaConfig(gConfFile,&width,&height,&profundidade,&tempoMax,&tipoP1,&tipoP2);
 
 	//inicializacao
 	SDL_Surface *screen;
@@ -216,10 +222,10 @@ int main(int argc, char *argv[])
 
 	t_controle controle;
 
-	SDL_mutex *jogoPronto = SDL_CreateMutex();
-	SDL_mutex *iniciaPartida = SDL_CreateMutex();
-	SDL_LockMutex(jogoPronto);
-	SDL_LockMutex(iniciaPartida);
+	SDL_sem *jogoPronto = SDL_CreateSemaphore(1);
+	SDL_sem *iniciaPartida = SDL_CreateSemaphore(1);
+	SDL_SemWait(jogoPronto);
+	SDL_SemWait(iniciaPartida);
 
 	ERR("Inicia mestre\n");
 	iniciaControle(&controle,&jogo,jogoPronto,iniciaPartida);
@@ -227,7 +233,7 @@ int main(int argc, char *argv[])
 	SDL_Thread *mestre = SDL_CreateThread((int (*)(void*))mestreDeJogo,&controle);
 	//espera ate o mestre ter terminado a inicializacao
 	ERR("Espera o mestre\n");
-	SDL_LockMutex(jogoPronto);
+	SDL_SemWait(jogoPronto);
 	//cria os jogadores humanos
 	int celulaX;
 	int celulaY;
@@ -263,6 +269,10 @@ int main(int argc, char *argv[])
 	SDL_SemWait(jogador1.pronto);
 	SDL_SemWait(jogador2.pronto);
 
+	t_miniMax parametrosIa;
+	parametrosIa.profundidadeMaxima = profundidade;
+	parametrosIa.tempoMaximo = tempoMax;
+
 	if(tipoP1 == HUMANO)
 	{
 		iniciaControleHumano(&humano1,&realce,&celulaX,&celulaY,houveEntrada,escreveEntrada);
@@ -272,9 +282,8 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		//jogador1Data.joga = iaRandom;
-		jogador1Data.joga = iaMinMax;
-		jogador1Data.data = &profundidade;
+		jogador1Data.joga = iaMinMaxOld;
+		jogador1Data.data = &parametrosIa;
 		p1 = SDL_CreateThread((int (*)(void *))threadJogador,&jogador1Data);
 	}
 	if(tipoP2 == HUMANO)
@@ -288,7 +297,7 @@ int main(int argc, char *argv[])
 	{
 		//jogador2Data.joga = iaRandom;
 		jogador2Data.joga = iaMinMax;
-		jogador2Data.data = &profundidade;
+		jogador2Data.data = &parametrosIa;
 		p2 = SDL_CreateThread((int (*)(void *))threadJogador,&jogador2Data);
 	}
 
@@ -296,7 +305,7 @@ int main(int argc, char *argv[])
 	SDL_SemWait(jogador1.pronto);
 	SDL_SemWait(jogador2.pronto);
 
-	SDL_UnlockMutex(iniciaPartida);
+	SDL_SemPost(iniciaPartida);
 
 	ERR("Go!\n");
 

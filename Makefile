@@ -5,7 +5,7 @@ OBJ = obj
 BIN = bin
 INC = include
 LIBS = -lGL -lSDLmain -lSDL
-OBJECTS = $(OBJ)/main.o $(OBJ)/ia.o $(OBJ)/drawer.o $(OBJ)/interface.o $(OBJ)/frameControl.o $(OBJ)/movement.o $(OBJ)/init.o $(OBJ)/control.o $(OBJ)/random.o
+OBJECTS = $(OBJ)/main.o $(OBJ)/oldIa.o $(OBJ)/ia.o $(OBJ)/drawer.o $(OBJ)/interface.o $(OBJ)/frameControl.o $(OBJ)/movement.o $(OBJ)/init.o $(OBJ)/control.o $(OBJ)/random.o
 NAME = pawntower-chess
 
 all: $(OBJ) $(BIN) release

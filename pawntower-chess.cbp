@@ -40,6 +40,7 @@
 		<Unit filename="include/init.h" />
 		<Unit filename="include/interface.h" />
 		<Unit filename="include/movement.h" />
+		<Unit filename="include/oldIa.h" />
 		<Unit filename="include/random.h" />
 		<Unit filename="src/control.c">
 			<Option compilerVar="CC" />
@@ -63,6 +64,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/movement.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/oldIa.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="src/random.c">
