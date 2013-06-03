@@ -199,6 +199,8 @@ int main(int argc, char *argv[])
 
 	carregaConfig(gConfFile,&width,&height,&profundidade,&tempoMax,&tipoP1,&tipoP2);
 
+	ERR("%d vs %d\n",tipoP1,tipoP2);
+
 	//inicializacao
 	SDL_Surface *screen;
 	SDL_Event event;
@@ -273,6 +275,7 @@ int main(int argc, char *argv[])
 	parametrosIa.profundidadeMaxima = profundidade;
 	parametrosIa.tempoMaximo = tempoMax;
 
+	//P1 = Brancas
 	if(tipoP1 == HUMANO)
 	{
 		iniciaControleHumano(&humano1,&realce,&celulaX,&celulaY,houveEntrada,escreveEntrada);
@@ -282,10 +285,11 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		jogador1Data.joga = iaMinMaxOld;
+		jogador1Data.joga = iaMinMax;
 		jogador1Data.data = &parametrosIa;
 		p1 = SDL_CreateThread((int (*)(void *))threadJogador,&jogador1Data);
 	}
+	//P2 = Pretas
 	if(tipoP2 == HUMANO)
 	{
 		iniciaControleHumano(&humano2,&realce,&celulaX,&celulaY,houveEntrada,escreveEntrada);

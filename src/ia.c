@@ -157,13 +157,13 @@ double miniMax(char time,t_jogada *jogada,t_jogo *jogoOrig,double alfa, double b
 						}
 						else if(estado == time)
 						{
-							ERR("VITORIA %d\n",(int)time);
+							//ERR("VITORIA %d\n",(int)time);
 							//ERR("Val = %d\n",cor);
 							val = 1;
 						}
 						else if(estado == outroTime)
 						{
-							ERR("DERROTA %d\n",(int)time);
+							//ERR("DERROTA %d\n",(int)time);
 							//ERR("Val = %d\n",-cor);
 							val = -1;
 						}
@@ -210,21 +210,24 @@ double funcaoHeuristica(char time, t_jogo* jogo)
 	return funcaoHeuristicaJogador(time,jogo) - funcaoHeuristicaJogador(outroTime,jogo);
 }
 
+
 double funcaoHeuristicaJogador(char time, t_jogo* jogo)
 {
 	t_jogador *jogador;
 	unsigned int partida;
 	int sinal;
+	//OBS: P1 = Brancas = Baixo
+	//OBS: P2 = Pretas  = Cima
 	if(time == P1)
 	{
-		partida = 1;
-		sinal = 1;
+		partida = 6;
+		sinal = -1;
 		jogador = &jogo->p1;
 	}
 	else
 	{
-		partida = 6;
-		sinal = -1;
+		partida = 1;
+		sinal = 1;
 		jogador = &jogo->p2;
 	}
 
