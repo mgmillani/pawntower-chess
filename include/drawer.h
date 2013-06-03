@@ -1,8 +1,11 @@
+typedef struct s_realce t_realce;
+
 #ifndef DRAWER_H
 #define DRAWER_H
 
 #include "definitions.h"
 #include "movement.h"
+#include "control.h"
 
 typedef struct s_realce
 {
@@ -20,7 +23,12 @@ void desenhaMenuPrincipal(t_rect *botoes, int numBotoes);
 /**
   * desenha as pecas e o tabuleiro na regiao dada da tela
   */
-void desenhaJogo(t_rect *regiao, t_jogo *jogo);
+void desenhaJogo(t_rect *regiao, t_jogo *jogo,t_jogada *jogada);
+
+/**
+  * desenha a ultima jogada feita
+  */
+void desenhaJogada(t_rect *regiao,t_jogada *jogada);
 
 /**
   * desenha o tabuleiro na regiao dada

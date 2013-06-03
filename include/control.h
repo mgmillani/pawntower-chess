@@ -1,3 +1,5 @@
+typedef struct s_jogada t_jogada;
+
 #ifndef CONTROL_H
 #define CONTROL_H
 
@@ -20,10 +22,12 @@ typedef struct s_controle
 {
 	t_jogo *jogo;
 	t_jogada *jogada;
+	t_jogada *ultimaJogada;
 	SDL_sem *comecoP1;
 	SDL_sem *comecoP2;
 	SDL_mutex *turnoP1[TotalMutex];
 	SDL_mutex *turnoP2[TotalMutex];
+	SDL_mutex *efetuaJogada;
 	SDL_sem *inicioJogo;
 	SDL_sem *iniciaPartida;
 	int estadoJogo;
@@ -73,7 +77,7 @@ void iniciaControleHumano(t_controleHumano *controleHumano,t_realce *realce, int
 /**
   * inicia o controle do jogo
   */
-void iniciaControle(t_controle *controle,t_jogo *jogo,SDL_sem *jogoPronto,SDL_sem *iniciaPartida);
+void iniciaControle(t_controle *controle,t_jogo *jogo,t_jogada *ultimaJogada,SDL_sem *jogoPronto,SDL_sem *iniciaPartida, SDL_mutex *efetuaJogada);
 
 /**
 	* thread principal do jogo, a qual deve-se mandar os comandos de cada jogador

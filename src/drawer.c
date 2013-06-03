@@ -29,9 +29,10 @@ void desenhaMenuPrincipal(t_rect *botoes, int numBotoes)
 /**
   * desenha as pecas e o tabuleiro na regiao dada da tela
   */
-void desenhaJogo(t_rect *regiao, t_jogo *jogo)
+void desenhaJogo(t_rect *regiao, t_jogo *jogo,t_jogada *jogada)
 {
 	desenhaTabuleiro(regiao);
+	desenhaJogada(regiao,jogada);
 	desenhaPecas(regiao,&(jogo->p1),P1);
 	desenhaPecas(regiao,&(jogo->p2),P2);
 }
@@ -70,6 +71,50 @@ void desenhaTabuleiro(t_rect *regiao)
       }
    }
    return;
+}
+
+/**
+  * desenha a ultima jogada feita
+  */
+void desenhaJogada(t_rect *regiao,t_jogada *jogada)
+{
+	double cellW = regiao->w/8;
+	double cellH = regiao->h/8;
+
+	int coluna;
+	int linha;
+
+	//desenha a celula da origem do movimento
+	coluna = jogada->posOrigem%8;
+	linha = jogada->posOrigem/8;
+
+	double x0 = regiao->x + cellW*coluna;
+	double y0 = regiao->y + cellH*linha;
+
+	glBegin(GL_QUADS);
+	glColor3f(0.7,0.2,0.08);
+	glVertex2d(x0,y0);
+	glVertex2d(x0+cellW,y0);
+	glVertex2d(x0+cellW,y0+cellH);
+	glVertex2d(x0,y0+cellH);
+
+	glEnd();
+
+	//desenha a celula do destino do movimento
+	coluna = jogada->posOrigem%8;
+	linha = jogada->posOrigem/8;
+
+	x0 = regiao->x + cellW*coluna;
+	y0 = regiao->y + cellH*linha;
+
+	glBegin(GL_QUADS);
+	glColor3f(0.2,0.7,0.08);
+	glVertex2d(x0,y0);
+	glVertex2d(x0+cellW,y0);
+	glVertex2d(x0+cellW,y0+cellH);
+	glVertex2d(x0,y0+cellH);
+	glEnd();
+
 }
 
 /**
@@ -161,16 +206,7 @@ void desenhaPeao(t_rect *regiao,int linha, int coluna,char time)
   glVertex2f (0.1*cellW,0.9*cellH);
   glEnd();
   glTranslatef(-minx,-miny,0.0);
-/*
-	glBegin(GL_QUADS);
 
-	glVertex2d(minx,miny);
-	glVertex2d(maxx,miny);
-	glVertex2d(maxx,maxy);
-	glVertex2d(minx,maxy);
-
-	glEnd();
-*/
 	return;
 }
 
@@ -264,15 +300,6 @@ void desenhaTorre(t_rect *regiao,int linha, int coluna,char time)
       glVertex2f (0.1*cellW,0.9*cellH);
    glEnd();
    glTranslatef(-minx,-miny,0.0);
-/*
-	glBegin(GL_QUADS);
 
-	glVertex2d(minx,miny);
-	glVertex2d(maxx,miny);
-	glVertex2d(maxx,maxy);
-	glVertex2d(minx,maxy);
-
-	glEnd();
-*/
    return;
 }

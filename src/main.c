@@ -223,14 +223,18 @@ int main(int argc, char *argv[])
 	iniciaEstadoJogo(&jogo);
 
 	t_controle controle;
+	t_jogada ultimaJogada;
+	ultimaJogada.posOrigem = 100;
+	ultimaJogada.posDestino = 100;
 
+	SDL_mutex *leUltimaJogada = SDL_CreateMutex();
 	SDL_sem *jogoPronto = SDL_CreateSemaphore(1);
 	SDL_sem *iniciaPartida = SDL_CreateSemaphore(1);
 	SDL_SemWait(jogoPronto);
 	SDL_SemWait(iniciaPartida);
 
 	ERR("Inicia mestre\n");
-	iniciaControle(&controle,&jogo,jogoPronto,iniciaPartida);
+	iniciaControle(&controle,&jogo,&ultimaJogada,jogoPronto,iniciaPartida,leUltimaJogada);
 
 	SDL_Thread *mestre = SDL_CreateThread((int (*)(void*))mestreDeJogo,&controle);
 	//espera ate o mestre ter terminado a inicializacao
@@ -340,7 +344,11 @@ int main(int argc, char *argv[])
 					quit = 1;
 			}
 		}
-		desenhaJogo(&camera,&jogo);
+
+		//desenha o tabuleiro e a ultima jogada
+		SDL_LockMutex(leUltimaJogada);
+		desenhaJogo(&camera,&jogo,&ultimaJogada);
+		SDL_UnlockMutex(leUltimaJogada);
 		SDL_GL_SwapBuffers();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		controlFramerate(ctrl);

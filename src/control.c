@@ -59,10 +59,11 @@ void iniciaControleHumano(t_controleHumano *controleHumano,t_realce *realce, int
 /**
   * inicia o controle do jogo
   */
-void iniciaControle(t_controle *controle,t_jogo *jogo,SDL_sem *jogoPronto,SDL_sem *iniciaPartida)
+void iniciaControle(t_controle *controle,t_jogo *jogo,t_jogada *ultimaJogada,SDL_sem *jogoPronto,SDL_sem *iniciaPartida, SDL_mutex *efetuaJogada)
 {
 	controle->jogo = jogo;
 	controle->jogada = malloc(sizeof(*(controle->jogada)));
+	controle->ultimaJogada = ultimaJogada;
 	//cria os mutexes
 	int i;
 	for(i=0 ; i< TotalMutex ; i++)
@@ -76,6 +77,7 @@ void iniciaControle(t_controle *controle,t_jogo *jogo,SDL_sem *jogoPronto,SDL_se
 
 	controle->inicioJogo = jogoPronto;
 	controle->iniciaPartida = iniciaPartida;
+	controle->efetuaJogada = efetuaJogada;
 
 	controle->estadoJogo = UNFINISHED;
 
@@ -88,9 +90,7 @@ int mestreDeJogo(t_controle *controle)
 {
 	int estadoJogo = UNFINISHED;
 	//tranca ambos os jogadores ate o jogo comecar
-	ERR("Mestre trancou :%p\n",controle->turnoP1[Poder]);
 	SDL_LockMutex(controle->turnoP1[Poder]);
-	ERR("Mestre trancou :%p\n",controle->turnoP2[Poder]);
 	SDL_LockMutex(controle->turnoP2[Poder]);
 	SDL_SemPost(controle->inicioJogo);
 	//espera ate o sinal de inicio da partida para liberar o P1
@@ -113,6 +113,10 @@ int mestreDeJogo(t_controle *controle)
 		SDL_LockMutex(controle->turnoP1[Poder]);
 		//executa a jogada de P1
 		executaJogada(controle->jogo,controle->jogada);
+		//copia a ultima jogada
+		SDL_LockMutex(controle->efetuaJogada);
+		memcpy(controle->ultimaJogada,controle->jogada,sizeof(*controle->jogada));
+		SDL_UnlockMutex(controle->efetuaJogada);
 		//verifica se o jogo acabou
 		estadoJogo = fimDeJogo(controle->jogo,P2);
 		if(estadoJogo!=UNFINISHED)
@@ -134,6 +138,10 @@ int mestreDeJogo(t_controle *controle)
 		SDL_LockMutex(controle->turnoP2[Poder]);
 		//executa a jogada de P2
 		executaJogada(controle->jogo,controle->jogada);
+		//copia a ultima jogada
+		SDL_LockMutex(controle->efetuaJogada);
+		memcpy(controle->ultimaJogada,controle->jogada,sizeof(*controle->jogada));
+		SDL_UnlockMutex(controle->efetuaJogada);
 		//verifica se o jogo acabou
 		estadoJogo = fimDeJogo(controle->jogo,P1);
 		if(estadoJogo!=UNFINISHED)
