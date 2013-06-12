@@ -101,8 +101,8 @@ void desenhaJogada(t_rect *regiao,t_jogada *jogada)
 	glEnd();
 
 	//desenha a celula do destino do movimento
-	coluna = jogada->posOrigem%8;
-	linha = jogada->posOrigem/8;
+	coluna = jogada->posDestino%8;
+	linha = jogada->posDestino/8;
 
 	x0 = regiao->x + cellW*coluna;
 	y0 = regiao->y + cellH*linha;

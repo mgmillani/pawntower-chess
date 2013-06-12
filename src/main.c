@@ -318,6 +318,7 @@ int main(int argc, char *argv[])
 	ERR("Go!\n");
 
 	char quit = 0;
+	char invert = 0;
 	while(!quit)
 	{
 		//verifica se o usuario fez algo
@@ -329,8 +330,19 @@ int main(int argc, char *argv[])
 			{
 				SDL_LockMutex(escreveEntrada);
 				//calcula em qual celula ocorreu o clique
-				double x = event.motion.x/(double)width - camera.x;
-				double y = event.motion.y/(double)height - camera.y;
+				double x;
+				double y;
+
+				if(invert)
+				{
+					y = 1 - event.motion.y/(double)height - camera.y;
+					x = 1 -event.motion.x/(double)width - camera.x;
+				}
+				else
+				{
+					y = event.motion.y/(double)height - camera.y;
+					x = event.motion.x/(double)width - camera.x;
+				}
 
 				celulaX = x/cellW;
 				celulaY = y/cellH;
@@ -342,12 +354,24 @@ int main(int argc, char *argv[])
 			{
 				if(event.key.keysym.sym == SDLK_ESCAPE)
 					quit = 1;
+				else if(event.key.keysym.sym == SDLK_r)
+					invert ^= 1;
 			}
 		}
 
 		//desenha o tabuleiro e a ultima jogada
 		SDL_LockMutex(leUltimaJogada);
-		desenhaJogo(&camera,&jogo,&ultimaJogada);
+		if(invert)
+		{
+			glPushMatrix();
+			glTranslatef(0.5,0.5,0);
+			glRotatef(180,0,0,1);
+			glTranslatef(-0.5,-0.5,0);
+			desenhaJogo(&camera,&jogo,&ultimaJogada);
+			glPopMatrix();
+		}
+		else
+			desenhaJogo(&camera,&jogo,&ultimaJogada);
 		SDL_UnlockMutex(leUltimaJogada);
 		SDL_GL_SwapBuffers();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
