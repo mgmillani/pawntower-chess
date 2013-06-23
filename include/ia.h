@@ -11,11 +11,36 @@ typedef struct s_miniMax
 	unsigned int tempoMaximo;
 }t_miniMax;
 
+typedef struct s_miniMaxData
+{
+	char time;
+	t_jogada *jogada;
+	t_jogo *jogoOrig;
+	double alfa;
+	double beta;
+	int cor;
+	unsigned int profundidade;
+	unsigned int tempoMax;
+	char primeiro;
+	unsigned int t0;
+	double val;
+}t_miniMaxData;
+
 void iaRandom(t_jogador *jogador,char time,t_jogada *jogada,t_jogo *jogo,void *data);
 
 void iaMinMax(t_jogador *jogador,char time,t_jogada *jogada,t_jogo *jogo,void *data);
+void iaMinMaxB(t_jogador *jogador,char time,t_jogada *jogada,t_jogo *jogo,void *data);
 
 double miniMax(char time,t_jogada *jogada,t_jogo *jogoOrig,double alfa, double beta, int cor, unsigned int profundidade,unsigned int tempoMax,char primeiro,unsigned int t0);
+
+double miniMaxB(char time,t_jogada *jogada,t_jogo *jogoOrig,double alfa, double beta, int cor, unsigned int profundidade,unsigned int tempoMax,char primeiro,unsigned int t0);
+
+double parallelMiniMax(char time,t_jogada *jogada,t_jogo *jogoOrig,double alfa, double beta, int cor, unsigned int profundidade,unsigned int tempoMax,char primeiro,unsigned int t0);
+
+/**
+  * thread para aplicar o minimax em paralelo
+  */
+int miniMaxThread(void *minmaxData);
 
 double funcaoHeuristica(char time, t_jogo* jogo);
 
